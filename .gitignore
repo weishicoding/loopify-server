@@ -1,0 +1,66 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# PM2 logs
+pmlogs/
+pm2.log
+
+# Coverage directory used by testing tools
+coverage/
+
+# Next.js build output (if used for GraphQL frontend)
+.next/
+out/
+
+# Build output
+dist/
+build/
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/
+
+# TypeScript
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Logs directory (Winston)
+logs/
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# PostgreSQL dump files (if any)
+*.dump
+*.sql
+
+# Optional: Ignore SQLite if you use it for development
+*.sqlite
+*.sqlite-journal

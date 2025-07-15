@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # app:
+  #   build: .
+  #   depends_on:
+  #     - postgredb
+  #   ports:
+  #     - '3000:3000'
+  #   networks:
+  #     - node-network
+  postgredb:
+    image: postgres
+    restart: always
+    container_name: postgredb
+    environment:
+      POSTGRES_USER: loopify
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: mydb
+    ports:
+      - '5432:5432'
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      - node-network
+
+  redisdb:
+    image: redis
+    restart: always
+    container_name: redisdb
+    command: redis-server --appendonly yes
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redisdata:/data
+    networks:
+      - node-network
+
+volumes:
+  dbdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  node-network:
+    driver: bridge
