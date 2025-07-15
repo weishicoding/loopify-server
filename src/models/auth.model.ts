@@ -60,7 +60,7 @@ export const generateAuthModel = (context: BaseContext) => {
         const refreshToken = await generateRefreshToken(user.id);
 
         return { accessToken, refreshToken, userId: user.id };
-      } catch (error: unknown) {
+      } catch (error) {
         logger.error(`Login with code failed for email ${email}:`, getErrorMessage(error));
         throw new ApolloError(`Login with code failed`);
       }

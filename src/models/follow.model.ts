@@ -1,8 +1,17 @@
 import { GenericResponse } from '@/graphql/generated/types.js';
 import logger from '@/lib/logger.js';
-import { ConnectionArguments, CoreServiceContext } from '@/types/index.js';
+import { ConnectionArguments, CoreServiceContext, PaginationConnection } from '@/types/index.js';
 import { getErrorMessage } from '@/utils/error.util.js';
+import { Prisma } from '@prisma/client';
 import { ApolloError } from 'apollo-server-errors';
+
+type FollowWithFollower = Prisma.FollowGetPayload<{
+  include: { follower: true };
+}>;
+
+type FollowWithFollowing = Prisma.FollowGetPayload<{
+  include: { following: true };
+}>;
 
 export const generateFollowModel = (context: CoreServiceContext) => {
   const { prisma } = context;
@@ -14,7 +23,10 @@ export const generateFollowModel = (context: CoreServiceContext) => {
      * @param paginationArgs
      * @returns
      */
-    getFollowersConnection: async (userId: string, paginationArgs: ConnectionArguments) => {
+    getFollowersConnection: async (
+      userId: string,
+      paginationArgs: ConnectionArguments
+    ): Promise<PaginationConnection<FollowWithFollower>> => {
       const { first, after, last, before } = paginationArgs;
       const take = first ? first + 1 : last ? -(last + 1) : undefined;
       const cursor = first ? after : before;
@@ -33,7 +45,7 @@ export const generateFollowModel = (context: CoreServiceContext) => {
           follower: true,
         },
         orderBy: {
-          createAt: 'desc',
+          createdAt: 'desc',
         },
       });
 
@@ -86,7 +98,10 @@ export const generateFollowModel = (context: CoreServiceContext) => {
      * @param paginationArgs
      * @returns
      */
-    getFollowingConnection: async (userId: string, paginationArgs: ConnectionArguments) => {
+    getFollowingConnection: async (
+      userId: string,
+      paginationArgs: ConnectionArguments
+    ): Promise<PaginationConnection<FollowWithFollowing>> => {
       const { first, after, last, before } = paginationArgs;
       const take = first ? first + 1 : last ? -(last + 1) : undefined;
       const cursor = first ? after : before;
@@ -102,10 +117,10 @@ export const generateFollowModel = (context: CoreServiceContext) => {
           followingId: userId,
         },
         include: {
-          follower: true,
+          following: true,
         },
         orderBy: {
-          createAt: 'desc',
+          createdAt: 'desc',
         },
       });
 

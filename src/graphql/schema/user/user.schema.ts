@@ -17,7 +17,6 @@ export const userTypeDefs = gql`
     id: ID!
     email: String!
     name: String
-    createAt: String!
 
     """
     The total number of users that are following this user.

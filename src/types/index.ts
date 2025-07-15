@@ -74,7 +74,24 @@ export interface ConnectionArguments {
   readonly before?: string | null;
 }
 
+/**
+ * Connection generic return for pagination
+ */
+export interface PaginationConnection<T> {
+  edges: {
+    cursor: string;
+    node: T;
+  }[];
+  pageInfo: {
+    endCursor: string | null;
+    hasNextPage: boolean;
+    startCursor: string | null;
+    hasPreviousPage: boolean;
+  };
+  totalCount: number;
+}
+
 export enum TokenType {
   ACCESS,
-  REFRESH
+  REFRESH,
 }

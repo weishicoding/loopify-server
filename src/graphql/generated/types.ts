@@ -125,7 +125,6 @@ export type QueryUserArgs = {
 
 export type User = {
   __typename?: 'User';
-  createAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
   /** The total number of users that are following this user. */
   followerCount: Scalars['Int']['output'];
@@ -334,7 +333,6 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 };
 
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
-  createAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   followerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   followers?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, Partial<UserFollowersArgs>>;

@@ -13,27 +13,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// ================================
+/// Users and auth
+/// ================================
+
 model User {
   id       String      @id @default(cuid())
   email    String   @unique
   name     String?
-  createAt DateTime @default(now()) @map("create_at")
-  updateAt DateTime @updatedAt @map("update_at")
-  post Post[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   refreshToken RefreshToken[]
 
   followers Follow[] @relation("followers")
   following Follow[] @relation("following")
 
+  // Item relations
+  item Item[] @relation("ItemSold")
+  // Like relations
+  likes    Like[] @relation("UserLikes")
+  // Comment relations
+  comments Comment[] @relation("UserComments")
+  // Order relations
+  purchases Order[] @relation("ItemBought")
+  sales     Order[] @relation("OrderAsSeller")
+
   @@map("user")
 }
+
+model RefreshToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expireAt    DateTime @map("expire_at")
+  revoked     Boolean   @default(false)
+  deviceInfo  String? @map("device_info")
+
+  @@map("refresh-token")
+
+}
+
+/// ================================
+/// Follow
+/// ================================
 
 model Follow {
   id String @id @default(cuid())
 
   followerId String @map("follower_id")
   followingId String @map("following_id")
-  createAt DateTime @default(now()) @map("create_at")
+  createdAt DateTime @default(now()) @map("created_at")
   
   follower User @relation("following", fields: [followerId], references: [id])
   following User @relation("followers", fields: [followingId], references: [id])
@@ -45,29 +76,157 @@ model Follow {
   @@map("follow")
 }
 
-model Post {
+
+/// ================================
+/// Items and its relations
+/// ================================
+
+model Item {
   id          String      @id @default(cuid())
   title       String
-  description String?
-  published   Boolean  @default(false)
-  createAt    DateTime @default(now()) @map("create_at")
-  updateAt    DateTime @updatedAt @map("update_at")
-  authorId    String      @map("author_id")
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(10, 2) //This stores up to 10 digits, with 2 for cents.
+  condition   ItemCondition @default(USED)
+  status     ItemStatus  @default(AVAILABLE)
+  location    String?
+  
+  sellerId    String   @map("seller_id")
+  seller      User     @relation("ItemSold", fields: [sellerId], references: [id], onDelete: Cascade)
 
-  @@map("post")
+  //category
+  categoryId  String   @map("category_id")
+  category    Category  @relation(fields: [categoryId], references: [id])
+  
+  //relationships
+  images      Image[]
+  comments    Comment[]
+  likedBy     Like[] @relation("ItemLikes")
+  order       Order?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("item")
 }
 
-model RefreshToken {
-  id          String    @id @default(cuid())
-  token       String    @unique
-  userId      String    
-  user        User      @relation(fields: [userId], references: [id])
-  createAt    DateTime  @default(now())
-  expireAt    DateTime
-  revoked     Boolean   @default(false)
-  deviceInfo  String?
-
-  @@map("refresh-token")
-
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  USED
+  FOR_PARTS
 }
+
+enum ItemStatus {
+  AVAILABLE
+  RESERVED
+  PENDING
+  SOLD
+  HIDDEN
+}
+
+model Image {
+  id           String  @id @default(cuid())
+  url          String
+  // Let the best one can be showed as a cover photo
+  sort         Int
+  itemId       String  @map("item_id")
+  item         Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([id])
+
+  @@map("image")
+}
+
+model Category {
+  id           String @id @default(cuid())
+  name         String @unique // e.g., "Electronics", "Clothing", "Books"
+  // For example, "Mobile Phones" can be a sub-category of "Electronics".
+  // `parentId` points to the ID of the parent category.
+  parentId     String? @map("parent_id")
+  parent       Category? @relation("SubCategories", fields: [parentId], references: [id])
+  children     Category[] @relation("SubCategories")
+
+  item         Item[]
+
+  @@index([parentId])
+
+  @@map("category")
+}
+
+model Comment {
+  id           String @id  @default(cuid())
+  content      String  @db.Text()
+
+  authorId     String  @map("author_id")
+  author       User    @relation("UserComments", fields: [authorId], references: [id])
+
+  itemId       String  @map("item_id")
+  item         Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  parentId     String?
+  parent       Comment? @relation("Replies", fields: [parentId], references: [id], onDelete: NoAction)
+  replies      Comment[] @relation("Replies")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([itemId, createdAt]) // Index for fetching comments for an item, sorted by date.
+  @@index([authorId])
+
+  @@map("comment")
+}
+
+model Like {
+  userId       String @map("user_id")
+  user         User @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+
+  itemId       String @map("item_id")
+  item         Item @relation("ItemLikes", fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now()) @map("created_at")
+
+
+  @@id([itemId, userId])
+
+  @@map("like")
+}
+
+model Order {
+  id          String @id  @default(cuid())
+  
+  itemId      String  @unique @map("item_id")
+  item        Item    @relation(fields: [itemId], references: [id])
+
+  buyerId     String  @map("buyer_id")
+  buyer       User    @relation("ItemBought",fields: [buyerId], references: [id])
+
+  sellerId    String  @map("seller_id")
+  seller      User    @relation("OrderAsSeller", fields: [sellerId], references: [id])
+
+  purchasPrice Decimal @db.Decimal(10, 2) @map("purchas_price")
+
+  status      OrderStatus @default(PAYMENT_PENDING)
+
+  shippingAddress String @db.Text @map("shipping_address")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([buyerId])
+  @@index([sellerId])
+
+  @@map("order")
+}
+
+enum OrderStatus {
+  PAYMENT_PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELED
+  REFUSED
+}
+
+

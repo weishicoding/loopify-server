@@ -8,23 +8,21 @@ const query: QueryResolvers<MyContext> = {
   },
   user: (_any, { id }, context) => {
     return context.models.user.getById(id);
-  }
+  },
 };
 
 const userTypeResolver: UserResolvers<MyContext> = {
-  createAt: (parent: PrismaUser) => {
-    return parent.createAt.toISOString();
-  },
   followers: async (parent: PrismaUser, args, context) => {
     validatePaginationArgs(args);
 
     const connection = await context.models.follow.getFollowersConnection(parent.id, args);
+
     return {
       ...connection,
       edges: connection.edges.map((edge) => ({
         cursor: edge.cursor,
-        node: edge.node.follower
-      }))
+        node: edge.node.follower,
+      })),
     };
   },
   isFollowedByMe: async (parent: PrismaUser, _, context) => {
@@ -38,9 +36,9 @@ const userTypeResolver: UserResolvers<MyContext> = {
   },
   followingCount: async (parent, _, context) => {
     return await context.models.follow.countFollowings(parent.id);
-  }
+  },
 };
 export const userResolver = {
   Query: query,
-  User: userTypeResolver
+  User: userTypeResolver,
 };
