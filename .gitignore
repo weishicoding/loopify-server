@@ -37,6 +37,9 @@ prisma/dev.db
 prisma/dev.db-journal
 prisma/migrations/
 
+# Redis
+redisdata/
+
 # TypeScript
 *.tsbuildinfo
 
