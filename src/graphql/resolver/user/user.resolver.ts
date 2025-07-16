@@ -1,6 +1,5 @@
 import { MyContext, PrismaUser } from '@/types/index.js';
 import { QueryResolvers, UserResolvers } from '../../generated/types.js';
-import { validatePaginationArgs } from '@/utils/validation.util.js';
 
 const query: QueryResolvers<MyContext> = {
   me: (_any, __any, context) => {
@@ -13,8 +12,6 @@ const query: QueryResolvers<MyContext> = {
 
 const userTypeResolver: UserResolvers<MyContext> = {
   followers: async (parent: PrismaUser, args, context) => {
-    validatePaginationArgs(args);
-
     const connection = await context.models.follow.getFollowersConnection(parent.id, args);
 
     return {
@@ -22,6 +19,17 @@ const userTypeResolver: UserResolvers<MyContext> = {
       edges: connection.edges.map((edge) => ({
         cursor: edge.cursor,
         node: edge.node.follower,
+      })),
+    };
+  },
+  following: async (parent, args, context) => {
+    const connection = await context.models.follow.getFollowingConnection(parent.id, args);
+
+    return {
+      ...connection,
+      edges: connection.edges.map((edge) => ({
+        cursor: edge.cursor,
+        node: edge.node.following,
       })),
     };
   },

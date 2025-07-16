@@ -30,12 +30,12 @@ export const userTypeDefs = gql`
     """
     A list of users that are following this user.
     """
-    followers(first: Int, after: String, last: Int, before: String): UserConnection!
+    followers(first: Int!, after: String): UserConnection!
 
     """
     A list of users that this user is following.
     """
-    following(first: Int, after: String, last: Int, before: String): UserConnection!
+    following(first: Int!, after: String): UserConnection!
 
     """
     Indicates if the currently authenticated user is following this user.

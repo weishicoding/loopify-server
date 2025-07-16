@@ -27,20 +27,16 @@ export const generateFollowModel = (context: CoreServiceContext) => {
       userId: string,
       paginationArgs: ConnectionArguments
     ): Promise<PaginationConnection<FollowWithFollower>> => {
-      const { first, after, last, before } = paginationArgs;
-      const take = first ? first + 1 : last ? -(last + 1) : undefined;
-      const cursor = first ? after : before;
-
-      const isForward = typeof first === 'number';
-      const isBackward = typeof last === 'number';
+      const { first, after } = paginationArgs;
+      const whereCondition = {
+        followingId: userId,
+      };
 
       const records = await prisma.follow.findMany({
-        take,
-        cursor: cursor ? { id: cursor } : undefined,
-        skip: cursor ? 1 : 0,
-        where: {
-          followerId: userId,
-        },
+        take: first + 1,
+        cursor: after ? { id: after } : undefined,
+        skip: after ? 1 : 0,
+        where: whereCondition,
         include: {
           follower: true,
         },
@@ -50,43 +46,23 @@ export const generateFollowModel = (context: CoreServiceContext) => {
       });
 
       const totalCount = await prisma.follow.count({
-        where: { followerId: userId },
+        where: whereCondition,
       });
 
-      let hasNextPage = false;
-      let hasPreviousPage = false;
-
-      if (isForward) {
-        hasNextPage = records.length > first;
-        if (hasNextPage) records.pop();
-      } else if (isBackward) {
-        hasPreviousPage = records.length > last;
-        if (hasPreviousPage) records.shift();
-        records.reverse();
-      }
+      const hasNextPage = records.length > first;
+      if (hasNextPage) records.pop();
 
       const edges = records.map((record) => ({
         cursor: record.id,
         node: record,
       }));
 
-      const startCursor = edges.length > 0 ? edges[0].cursor : null;
       const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
-
-      if (isForward && after) {
-        hasNextPage = true;
-      }
-
-      if (isBackward && before) {
-        hasPreviousPage = true;
-      }
 
       return {
         totalCount,
         pageInfo: {
           hasNextPage,
-          hasPreviousPage,
-          startCursor,
           endCursor,
         },
         edges,
@@ -102,20 +78,16 @@ export const generateFollowModel = (context: CoreServiceContext) => {
       userId: string,
       paginationArgs: ConnectionArguments
     ): Promise<PaginationConnection<FollowWithFollowing>> => {
-      const { first, after, last, before } = paginationArgs;
-      const take = first ? first + 1 : last ? -(last + 1) : undefined;
-      const cursor = first ? after : before;
-
-      const isForward = typeof first === 'number';
-      const isBackward = typeof last === 'number';
+      const { first, after } = paginationArgs;
+      const whereCondition = {
+        followerId: userId,
+      };
 
       const records = await prisma.follow.findMany({
-        take,
-        cursor: cursor ? { id: cursor } : undefined,
-        skip: cursor ? 1 : 0,
-        where: {
-          followingId: userId,
-        },
+        take: first + 1,
+        cursor: after ? { id: after } : undefined,
+        skip: after ? 1 : 0,
+        where: whereCondition,
         include: {
           following: true,
         },
@@ -125,43 +97,23 @@ export const generateFollowModel = (context: CoreServiceContext) => {
       });
 
       const totalCount = await prisma.follow.count({
-        where: { followingId: userId },
+        where: whereCondition,
       });
 
-      let hasNextPage = false;
-      let hasPreviousPage = false;
-
-      if (isForward) {
-        hasNextPage = records.length > first;
-        if (hasNextPage) records.pop();
-      } else if (isBackward) {
-        hasPreviousPage = records.length > last;
-        if (hasPreviousPage) records.shift();
-        records.reverse();
-      }
+      const hasNextPage = records.length > first;
+      if (hasNextPage) records.pop();
 
       const edges = records.map((record) => ({
         cursor: record.id,
         node: record,
       }));
 
-      const startCursor = edges.length > 0 ? edges[0].cursor : null;
       const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
-
-      if (isForward && after) {
-        hasNextPage = true;
-      }
-
-      if (isBackward && before) {
-        hasPreviousPage = true;
-      }
 
       return {
         totalCount,
         pageInfo: {
           hasNextPage,
-          hasPreviousPage,
-          startCursor,
           endCursor,
         },
         edges,

@@ -68,10 +68,8 @@ export type { PrismaUser };
  * This is pagination arguments for all pagination connections
  */
 export interface ConnectionArguments {
-  readonly first?: number | null;
+  readonly first: number;
   readonly after?: string | null;
-  readonly last?: number | null;
-  readonly before?: string | null;
 }
 
 /**
@@ -85,8 +83,6 @@ export interface PaginationConnection<T> {
   pageInfo: {
     endCursor: string | null;
     hasNextPage: boolean;
-    startCursor: string | null;
-    hasPreviousPage: boolean;
   };
   totalCount: number;
 }

@@ -22,10 +22,6 @@ export const commonTypeDefs = gql`
   """
   type PageInfo {
     """
-    The cursor of the first edge in the connection.
-    """
-    startCursor: String
-    """
     The cursor of the last edge in the connection.
     """
     endCursor: String
@@ -33,10 +29,6 @@ export const commonTypeDefs = gql`
     Indicates if there are more pages when paginating forwards.
     """
     hasNextPage: Boolean!
-    """
-    Indicates if there are more pages when paginating backwards.
-    """
-    hasPreviousPage: Boolean!
   }
 
   """

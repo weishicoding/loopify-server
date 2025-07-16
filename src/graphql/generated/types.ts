@@ -103,10 +103,6 @@ export type PageInfo = {
   endCursor?: Maybe<Scalars['String']['output']>;
   /** Indicates if there are more pages when paginating forwards. */
   hasNextPage: Scalars['Boolean']['output'];
-  /** Indicates if there are more pages when paginating backwards. */
-  hasPreviousPage: Scalars['Boolean']['output'];
-  /** The cursor of the first edge in the connection. */
-  startCursor?: Maybe<Scalars['String']['output']>;
 };
 
 export type Query = {
@@ -143,17 +139,13 @@ export type User = {
 
 export type UserFollowersArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
+  first: Scalars['Int']['input'];
 };
 
 
 export type UserFollowingArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
+  first: Scalars['Int']['input'];
 };
 
 export type UserConnection = Connection & {
@@ -321,8 +313,6 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
 export type PageInfoResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
   endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -335,8 +325,8 @@ export type QueryResolvers<ContextType = MyContext, ParentType extends Resolvers
 export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   followerCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  followers?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, Partial<UserFollowersArgs>>;
-  following?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, Partial<UserFollowingArgs>>;
+  followers?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<UserFollowersArgs, 'first'>>;
+  following?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<UserFollowingArgs, 'first'>>;
   followingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isFollowedByMe?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
