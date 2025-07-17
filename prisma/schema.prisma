@@ -21,6 +21,10 @@ model User {
   id       String      @id @default(cuid())
   email    String   @unique
   name     String?
+  bio      String    @db.Text
+  lastSeen DateTime?
+  avatarUrl String?
+  address   String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   refreshToken RefreshToken[]
@@ -29,11 +33,13 @@ model User {
   following Follow[] @relation("following")
 
   // Item relations
-  item Item[] @relation("ItemSold")
+  items Item[] @relation("ItemSold")
   // Like relations
-  likes    Like[] @relation("UserLikes")
+  itemCollects    ItemCollection[] @relation("UserItemCollection")
   // Comment relations
   comments Comment[] @relation("UserComments")
+  // 
+  commentLikes  CommentLike[] @relation("UserCommentLikes")
   // Order relations
   purchases Order[] @relation("ItemBought")
   sales     Order[] @relation("OrderAsSeller")
@@ -100,7 +106,7 @@ model Item {
   //relationships
   images      Image[]
   comments    Comment[]
-  likedBy     Like[] @relation("ItemLikes")
+  collectedBy     ItemCollection[] @relation("ItemCollects")
   order       Order?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -170,26 +176,40 @@ model Comment {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  likedBy      CommentLike[] @relation("CommentLikes")
+  likedCount   Int            @default(0)
+
   @@index([itemId, createdAt]) // Index for fetching comments for an item, sorted by date.
   @@index([authorId])
 
   @@map("comment")
 }
 
-model Like {
+model ItemCollection {
   userId       String @map("user_id")
-  user         User @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+  user         User @relation("UserItemCollection", fields: [userId], references: [id], onDelete: Cascade)
 
 
   itemId       String @map("item_id")
-  item         Item @relation("ItemLikes", fields: [itemId], references: [id], onDelete: Cascade)
+  item         Item @relation("ItemCollects", fields: [itemId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now()) @map("created_at")
 
 
   @@id([itemId, userId])
 
-  @@map("like")
+  @@map("item_collection")
+}
+
+model CommentLike {
+  userId      String @map("user_id")
+  user        User   @relation("UserCommentLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  commentId      String @map("comment_id")
+  comment     Comment  @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@map("comment_like")
 }
 
 model Order {
