@@ -15,7 +15,11 @@ const envSchema = z.object({
   SMTP_HOST: z.string(),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USERNAME: z.string(),
-  SMTP_PASSWORD: z.string()
+  SMTP_PASSWORD: z.string(),
+  AWS_ACCESS_KEY_ID: z.string(),
+  AWS_SECRET_ACCESS_KEY: z.string(),
+  AWS_S3_REGION: z.string(),
+  AWS_S3_BUCKET_NAME: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -36,7 +40,7 @@ export default {
   jwt: {
     secret: env.JWT_SECRET,
     accessExpirationInMinutes: env.JWT_ACCESS_EXPIRATION_IN_MINITES,
-    refreshExpirationInDays: env.JWT_REFRESS_EXPIRATION_IN_DAYS
+    refreshExpirationInDays: env.JWT_REFRESS_EXPIRATION_IN_DAYS,
   },
 
   //email
@@ -46,8 +50,16 @@ export default {
       port: env.SMTP_PORT,
       auth: {
         user: env.SMTP_USERNAME,
-        pass: env.SMTP_PASSWORD
-      }
-    }
-  }
+        pass: env.SMTP_PASSWORD,
+      },
+    },
+  },
+
+  // AWS
+  aws: {
+    accessKey: env.AWS_ACCESS_KEY_ID,
+    secretAccesskey: env.AWS_SECRET_ACCESS_KEY,
+    s3Region: env.AWS_S3_REGION,
+    s3Name: env.AWS_S3_BUCKET_NAME,
+  },
 };
