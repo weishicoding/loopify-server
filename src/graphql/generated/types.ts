@@ -28,6 +28,13 @@ export type AuthPayload = {
   userId: Scalars['String']['output'];
 };
 
+export type Categories = {
+  __typename?: 'Categories';
+  children: Array<Maybe<Categories>>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+};
+
 /** A generic connection type, conforming to the Relay Cursor Connections Specification. */
 export type Connection = {
   edges: Array<Edge>;
@@ -38,6 +45,23 @@ export type Connection = {
 /** Represents a single "edge" in a connection, connecting a node to a cursor. */
 export type Edge = {
   cursor: Scalars['ID']['output'];
+};
+
+/** Describes a single file that the client wants to upload. */
+export type FileUploadInfoInput = {
+  /** A client-side identifier to match the response with the request. */
+  customId?: InputMaybe<Scalars['String']['input']>;
+  fileSize: Scalars['Int']['input'];
+  fileType: Scalars['String']['input'];
+};
+
+export type FileUploadResponse = {
+  __typename?: 'FileUploadResponse';
+  customId?: Maybe<Scalars['String']['output']>;
+  /** The final public URL of the file after a successful upload. */
+  publicUrl: Scalars['String']['output'];
+  /** The temporary, secure URL to use for the PUT request to upload the file. */
+  uploadUrl: Scalars['String']['output'];
 };
 
 /**
@@ -55,6 +79,7 @@ export type Mutation = {
   _empty?: Maybe<Scalars['String']['output']>;
   /** A user follow other user */
   followUser: GenericResponse;
+  generateUploadUrl: Array<FileUploadResponse>;
   loginWithCode: AuthPayload;
   logout: GenericResponse;
   refreshToken: AuthPayload;
@@ -67,6 +92,11 @@ export type Mutation = {
 export type MutationFollowUserArgs = {
   followerId: Scalars['ID']['input'];
   followingId: Scalars['ID']['input'];
+};
+
+
+export type MutationGenerateUploadUrlArgs = {
+  files: Array<FileUploadInfoInput>;
 };
 
 
@@ -108,10 +138,16 @@ export type PageInfo = {
 export type Query = {
   __typename?: 'Query';
   _empty?: Maybe<Scalars['String']['output']>;
+  categories: Categories;
   /** Get the currently authenticated user's profile. */
   me?: Maybe<User>;
   /** Get a user's profile by their ID. */
   user?: Maybe<User>;
+};
+
+
+export type QueryCategoriesArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -239,8 +275,11 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 export type ResolversTypes = {
   AuthPayload: ResolverTypeWrapper<AuthPayload>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  Categories: ResolverTypeWrapper<Categories>;
   Connection: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Connection']>;
   Edge: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Edge']>;
+  FileUploadInfoInput: FileUploadInfoInput;
+  FileUploadResponse: ResolverTypeWrapper<FileUploadResponse>;
   GenericResponse: ResolverTypeWrapper<GenericResponse>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -257,8 +296,11 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   AuthPayload: AuthPayload;
   Boolean: Scalars['Boolean']['output'];
+  Categories: Categories;
   Connection: ResolversInterfaceTypes<ResolversParentTypes>['Connection'];
   Edge: ResolversInterfaceTypes<ResolversParentTypes>['Edge'];
+  FileUploadInfoInput: FileUploadInfoInput;
+  FileUploadResponse: FileUploadResponse;
   GenericResponse: GenericResponse;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -282,6 +324,13 @@ export type AuthPayloadResolvers<ContextType = MyContext, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CategoriesResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Categories'] = ResolversParentTypes['Categories']> = {
+  children?: Resolver<Array<Maybe<ResolversTypes['Categories']>>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ConnectionResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Connection'] = ResolversParentTypes['Connection']> = {
   __resolveType: TypeResolveFn<'UserConnection', ParentType, ContextType>;
   edges?: Resolver<Array<ResolversTypes['Edge']>, ParentType, ContextType>;
@@ -294,6 +343,13 @@ export type EdgeResolvers<ContextType = MyContext, ParentType extends ResolversP
   cursor?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 };
 
+export type FileUploadResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['FileUploadResponse'] = ResolversParentTypes['FileUploadResponse']> = {
+  customId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  publicUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  uploadUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type GenericResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['GenericResponse'] = ResolversParentTypes['GenericResponse']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -303,6 +359,7 @@ export type GenericResponseResolvers<ContextType = MyContext, ParentType extends
 export type MutationResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   _empty?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   followUser?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationFollowUserArgs, 'followerId' | 'followingId'>>;
+  generateUploadUrl?: Resolver<Array<ResolversTypes['FileUploadResponse']>, ParentType, ContextType, RequireFields<MutationGenerateUploadUrlArgs, 'files'>>;
   loginWithCode?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationLoginWithCodeArgs, 'code' | 'email'>>;
   logout?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationLogoutArgs, 'refreshToken'>>;
   refreshToken?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
@@ -318,6 +375,7 @@ export type PageInfoResolvers<ContextType = MyContext, ParentType extends Resolv
 
 export type QueryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   _empty?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  categories?: Resolver<ResolversTypes['Categories'], ParentType, ContextType, Partial<QueryCategoriesArgs>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
 };
@@ -349,8 +407,10 @@ export type UserEdgeResolvers<ContextType = MyContext, ParentType extends Resolv
 
 export type Resolvers<ContextType = MyContext> = {
   AuthPayload?: AuthPayloadResolvers<ContextType>;
+  Categories?: CategoriesResolvers<ContextType>;
   Connection?: ConnectionResolvers<ContextType>;
   Edge?: EdgeResolvers<ContextType>;
+  FileUploadResponse?: FileUploadResponseResolvers<ContextType>;
   GenericResponse?: GenericResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;

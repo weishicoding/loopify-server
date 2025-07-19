@@ -8,11 +8,11 @@ const config: CodegenConfig = {
       config: {
         contextType: 'src/types/index.js#MyContext',
         mappers: {
-          User: '@prisma/client#User as PrismaUser'
-        }
-      }
-    }
-  }
+          User: '@prisma/client#User as PrismaUser',
+        },
+      },
+    },
+  },
 };
 
 export default config;

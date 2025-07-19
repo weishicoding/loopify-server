@@ -4,6 +4,7 @@ import { directiveTypeDefs } from './directives.js';
 import { authTypeDefs } from './auth/auth.schema.js';
 import { commonTypeDefs } from './common.schema.js';
 import { followTypeDefs } from './user/follow.schema.js';
+import { uploadTypeDefs } from './upload/upload.schema.js';
 
 const baseTypeDefs = gql`
   type Query {
@@ -20,5 +21,6 @@ export const typeDefs = [
   userTypeDefs,
   directiveTypeDefs,
   authTypeDefs,
-  followTypeDefs
+  followTypeDefs,
+  uploadTypeDefs,
 ];
