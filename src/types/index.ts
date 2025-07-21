@@ -1,5 +1,7 @@
+import { generateCategoryLoader } from '@/loaders/category.loader.js';
 import { generateUserLoader } from '@/loaders/user.loader.js';
 import { generateAuthModel } from '@/models/auth.model.js';
+import { generateCategoryModel } from '@/models/category.model.js';
 import { generateFollowModel } from '@/models/follow.model.js';
 import { generateUserModel } from '@/models/user.model.js';
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
@@ -32,6 +34,7 @@ export type BaseContext = CoreServiceContext & RequestContext;
  */
 export interface MyLoaders {
   user: ReturnType<typeof generateUserLoader>;
+  category: ReturnType<typeof generateCategoryLoader>;
 }
 
 /**
@@ -41,6 +44,7 @@ export interface MyModels {
   auth: ReturnType<typeof generateAuthModel>;
   user: ReturnType<typeof generateUserModel>;
   follow: ReturnType<typeof generateFollowModel>;
+  category: ReturnType<typeof generateCategoryModel>;
 }
 
 /**

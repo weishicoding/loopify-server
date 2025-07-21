@@ -30,7 +30,7 @@ export type AuthPayload = {
 
 export type Categories = {
   __typename?: 'Categories';
-  children: Array<Maybe<Categories>>;
+  children?: Maybe<Array<Maybe<Categories>>>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
 };
@@ -138,16 +138,17 @@ export type PageInfo = {
 export type Query = {
   __typename?: 'Query';
   _empty?: Maybe<Scalars['String']['output']>;
-  categories: Categories;
+  categories?: Maybe<Categories>;
   /** Get the currently authenticated user's profile. */
   me?: Maybe<User>;
+  topLevelCategories: Array<Maybe<Categories>>;
   /** Get a user's profile by their ID. */
   user?: Maybe<User>;
 };
 
 
 export type QueryCategoriesArgs = {
-  id?: InputMaybe<Scalars['ID']['input']>;
+  id: Scalars['ID']['input'];
 };
 
 
@@ -325,7 +326,7 @@ export type AuthPayloadResolvers<ContextType = MyContext, ParentType extends Res
 };
 
 export type CategoriesResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Categories'] = ResolversParentTypes['Categories']> = {
-  children?: Resolver<Array<Maybe<ResolversTypes['Categories']>>, ParentType, ContextType>;
+  children?: Resolver<Maybe<Array<Maybe<ResolversTypes['Categories']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -375,8 +376,9 @@ export type PageInfoResolvers<ContextType = MyContext, ParentType extends Resolv
 
 export type QueryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   _empty?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  categories?: Resolver<ResolversTypes['Categories'], ParentType, ContextType, Partial<QueryCategoriesArgs>>;
+  categories?: Resolver<Maybe<ResolversTypes['Categories']>, ParentType, ContextType, RequireFields<QueryCategoriesArgs, 'id'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  topLevelCategories?: Resolver<Array<Maybe<ResolversTypes['Categories']>>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
 };
 

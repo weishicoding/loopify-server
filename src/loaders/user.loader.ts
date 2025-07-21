@@ -2,14 +2,13 @@ import { CoreServiceContext, PrismaUser } from '@/types/index.js';
 import DataLoader from 'dataloader';
 
 const batchUsers = (context: CoreServiceContext) => {
-  const { prisma } = context;
   return async (ids: readonly string[]): Promise<(PrismaUser | null)[]> => {
-    const users = await prisma.user.findMany({
+    const users = await context.prisma.user.findMany({
       where: {
         id: {
-          in: [...ids]
-        }
-      }
+          in: [...ids],
+        },
+      },
     });
 
     const userMap = new Map(users.map((u) => [u.id, u]));

@@ -17,6 +17,8 @@ import { generateUserModel } from '@/models/user.model.js';
 import { generateAuthModel } from '@/models/auth.model.js';
 import { generateUserLoader } from '@/loaders/user.loader.js';
 import { generateFollowModel } from '@/models/follow.model.js';
+import { generateCategoryLoader } from '@/loaders/category.loader.js';
+import { generateCategoryModel } from '@/models/category.model.js';
 
 /**
  * Creates a context for the application as a global context
@@ -55,6 +57,7 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
 
   const loaders: MyLoaders = {
     user: generateUserLoader(baseContext),
+    category: generateCategoryLoader(baseContext),
   };
 
   const modelContet: ModelContext = {
@@ -66,6 +69,7 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
     user: generateUserModel(modelContet),
     auth: generateAuthModel(modelContet),
     follow: generateFollowModel(modelContet),
+    category: generateCategoryModel(modelContet),
   };
 
   return {

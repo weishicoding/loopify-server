@@ -4,10 +4,11 @@ export const itemTypeDefs = gql`
   type Categories {
     id: ID!
     name: String!
-    children: [Categories]!
+    children: [Categories]
   }
 
   extend type Query {
-    categories(id: ID): Categories!
+    topLevelCategories: [Categories]!
+    categories(id: ID!): Categories
   }
 `;
