@@ -1,36 +1,37 @@
 # Loopify Node Backend
 
-A modern, scalable backend for Loopify, built with Node.js, TypeScript, Express, Apollo Server (GraphQL), Prisma ORM, PostgreSQL, and Redis. This project provides a robust API for marketplace-style applications, supporting authentication, item management, user interactions, and more.
+A modern, scalable backend for Loopify, built with Node.js(https://nodejs.org/), TypeScript(https://www.typescriptlang.org/), Express(https://expressjs.com/), Apollo Server (GraphQL)(https://www.apollographql.com/docs/apollo-server/), Prisma ORM(https://www.prisma.io/), PostgreSQL, and Redis. This project provides a robust API for marketplace-style applications, supporting authentication, item management, user interactions, and more.
 
 ---
 
 ## Features
 
-- **GraphQL API** powered by Apollo Server
-- **Express.js** for middleware and HTTP handling
-- **Prisma ORM** for PostgreSQL database access
-- **Redis** for caching and session management
+- [**GraphQL API**](https://www.apollographql.com/docs/apollo-server/) powered by Apollo Server
+- [**Express.js**](https://expressjs.com/) for middleware and HTTP handling
+- [**Prisma ORM**](https://www.prisma.io/) for PostgreSQL database access
+- [**Redis**](https://redis.io/) for caching and session management
 - **Authentication** with JWT and refresh tokens
 - **User, Item, Order, and Comment models**
-- **Zod** for schema validation and input safety
-- **CORS** for secure cross-origin requests
-- **Helmet** for enhanced HTTP security
-- **Logging** with Winston for robust, configurable logs
-- **Docker Compose** for easy local development
-- **Code quality** enforced with ESLint, Prettier, Husky, and lint-staged
+- [**Zod**](https://zod.dev/) for schema validation and input safety
+- [**CORS**](https://expressjs.com/en/resources/middleware/cors.html) for secure cross-origin requests
+- [**Helmet**](https://helmetjs.github.io/) for enhanced HTTP security
+- **Logging** with [Winston](https://github.com/winstonjs/winston) for robust, configurable logs
+- [**Docker Compose**](https://docs.docker.com/compose/) for easy local development
+- **Code quality** enforced with [ESLint](https://eslint.org/), [Prettier](https://prettier.io/), and [Husky](https://typicode.github.io/husky/), and lint-staged
 
 ---
 
 ## Tech Stack
 
-- **Node.js** & **TypeScript**
-- **Express.js**
-- **Apollo Server (GraphQL)**
-- **Prisma ORM**
-- **PostgreSQL**
-- **Redis**
-- **Docker Compose**
-- **ESLint, Prettier, Husky**
+- [**Node.js**](https://nodejs.org/)
+- [**TypeScript**](https://www.typescriptlang.org/)
+- [**Express.js**](https://expressjs.com/)
+- [**Apollo Server (GraphQL)**](https://www.apollographql.com/docs/apollo-server/)
+- [**Prisma ORM**](https://www.prisma.io/)
+- [**PostgreSQL**](https://www.postgresql.org/)
+- [**Redis**](https://redis.io/)
+- [**Docker Compose**](https://docs.docker.com/compose/)
+- [**ESLint**](https://eslint.org/), [**Prettier**](https://prettier.io/), [**Husky**](https://typicode.github.io/husky/)
 
 ---
 
