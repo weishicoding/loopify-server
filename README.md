@@ -1,6 +1,6 @@
 # Loopify Node Backend
 
-A modern, scalable backend for Loopify, built with Node.js(https://nodejs.org/), TypeScript(https://www.typescriptlang.org/), Express(https://expressjs.com/), Apollo Server (GraphQL)(https://www.apollographql.com/docs/apollo-server/), Prisma ORM(https://www.prisma.io/), PostgreSQL, and Redis. This project provides a robust API for marketplace-style applications, supporting authentication, item management, user interactions, and more.
+A modern, scalable backend for Loopify, built with [Node.js](https://nodejs.org/), [TypeScript](https://www.typescriptlang.org/), [Express](https://expressjs.com/), [Apollo Server (GraphQL)](https://www.apollographql.com/docs/apollo-server/), [Prisma ORM](https://www.prisma.io/), [PostgreSQL](https://www.postgresql.org/), and [Redis](https://redis.io/). This project provides a robust API for marketplace-style applications, supporting authentication, item management, user interactions, and more.
 
 ---
 
