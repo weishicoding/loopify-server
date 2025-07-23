@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 
 export const itemTypeDefs = gql`
-  enum ItemContition {
+  enum ItemCondition {
     NEW
     LIKE_NEW
     USED
