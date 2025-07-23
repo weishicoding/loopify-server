@@ -1,14 +1,52 @@
 import { gql } from 'graphql-tag';
 
 export const itemTypeDefs = gql`
-  type Categories {
-    id: ID!
-    name: String!
-    children: [Categories]
+  enum ItemContition {
+    NEW
+    LIKE_NEW
+    USED
+    FOR_PARTS
   }
 
-  extend type Query {
-    topLevelCategories: [Categories]!
-    categories(id: ID!): Categories
+  input CreateItemInput {
+    """
+    The title of the item listing. Required.
+    """
+    title: String!
+
+    """
+    A detailed description of the item. Required.
+    """
+    description: String!
+
+    """
+    The asking price. Use Float in GraphQL, but we will handle it
+    as a precise Decimal in the backend. Required.
+    """
+    price: Float!
+
+    """
+    The condition of the item. Required.
+    """
+    condition: ItemCondition!
+
+    """
+    The ID of the category this item belongs to. Required.
+    """
+    categoryId: ID!
+
+    """
+    A list of public URLs for the item's images. Must have at least one. Required.
+    """
+    imageUrls: [String!]!
+
+    """
+    (Optional) A simple string for the item's location.
+    """
+    location: String
+  }
+
+  extend type Mutation {
+    createItem(input: CreateItemInput!): GenericResponse!
   }
 `;

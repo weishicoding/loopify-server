@@ -1,4 +1,5 @@
 import { authResolver } from './auth/auth.resolver.js';
+import { categoryResolvers } from './item/category.resolver.js';
 import { itemResolvers } from './item/item.resolver.js';
 import { uploadResolver } from './upload/upload.resolver.js';
 import { followResolver } from './user/follow.resolver.js';
@@ -9,5 +10,6 @@ export const resolvers = [
   authResolver,
   followResolver,
   uploadResolver,
+  categoryResolvers,
   itemResolvers,
 ];

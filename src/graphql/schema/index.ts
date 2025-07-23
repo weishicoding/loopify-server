@@ -5,6 +5,7 @@ import { authTypeDefs } from './auth/auth.schema.js';
 import { commonTypeDefs } from './common.schema.js';
 import { followTypeDefs } from './user/follow.schema.js';
 import { uploadTypeDefs } from './upload/upload.schema.js';
+import { categoryTypeDefs } from './item/category.schema.js';
 import { itemTypeDefs } from './item/item.schema.js';
 
 const baseTypeDefs = gql`
@@ -24,5 +25,6 @@ export const typeDefs = [
   authTypeDefs,
   followTypeDefs,
   uploadTypeDefs,
+  categoryTypeDefs,
   itemTypeDefs,
 ];
