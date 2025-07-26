@@ -10,9 +10,9 @@ export const itemTypeDefs = gql`
 
   input CreateItemInput {
     """
-    The title of the item listing. Required.
+    The title of the item listing.
     """
-    title: String!
+    title: String
 
     """
     A detailed description of the item. Required.
@@ -43,6 +43,16 @@ export const itemTypeDefs = gql`
     """
     (Optional) A simple string for the item's location.
     """
+    location: String
+  }
+
+  type Item {
+    title: String
+    description: String!
+    isDiscount: Boolean!
+    price: Float!
+    originalPrice: Float!
+    imageUrls: [String!]!
     location: String
   }
 
