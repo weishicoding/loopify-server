@@ -46,14 +46,48 @@ export const itemTypeDefs = gql`
     location: String
   }
 
+  type CommentEdge implements Edge {
+    cursor: ID!
+    node: User!
+  }
+
+  # Define the type of Connection
+  type CommentConnection implements Connection {
+    edges: [CommentEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+  }
+
   type Item {
+    id: ID!
     title: String
     description: String!
     isDiscount: Boolean!
     price: Float!
     originalPrice: Float!
+    condition: ItemCondition!
     imageUrls: [String!]!
     location: String
+    createdAt: String! # Use String for ISO date format
+    """
+    The user who listed this item for sale.
+    """
+    seller: User! # An item must have a seller.
+    """
+    The category this item belongs to.
+    """
+    category: Categories! # An item must have a category.
+    """
+    Public comments or questions about this item.
+    """
+    comments(first: Int, after: String): CommentConnection! # Use a Connection for paginated comments
+  }
+
+  extend type Query {
+    """
+    Fetches a single item by its unique ID.
+    """
+    item(id: ID!): Item
   }
 
   extend type Mutation {
