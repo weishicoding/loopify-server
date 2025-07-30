@@ -3,6 +3,7 @@ import { generateUserLoader } from '@/loaders/user.loader.js';
 import { generateAuthModel } from '@/models/auth.model.js';
 import { generateCategoryModel } from '@/models/category.model.js';
 import { generateFollowModel } from '@/models/follow.model.js';
+import { generateItemModels } from '@/models/item.model.js';
 import { generateUserModel } from '@/models/user.model.js';
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { Request } from 'express';
@@ -45,6 +46,7 @@ export interface MyModels {
   user: ReturnType<typeof generateUserModel>;
   follow: ReturnType<typeof generateFollowModel>;
   category: ReturnType<typeof generateCategoryModel>;
+  item: ReturnType<typeof generateItemModels>;
 }
 
 /**
@@ -74,6 +76,7 @@ export type { PrismaUser };
 export interface ConnectionArguments {
   readonly first: number;
   readonly after?: string | null;
+  readonly filter?: unknown;
 }
 
 /**

@@ -46,6 +46,49 @@ export const itemTypeDefs = gql`
     location: String
   }
 
+  input ItemsFilterInput {
+    """
+    Filter items by a specific category ID.
+    """
+    categoryId: ID
+
+    """
+    Filter items by a specific seller's ID.
+    """
+    sellerId: ID
+
+    """
+    A search term to match against item titles and descriptions.
+    """
+    searchTerm: String
+
+    """
+    Filter by a minimum price.
+    """
+    minPrice: Float
+
+    """
+    Filter by a maximum price.
+    """
+    maxPrice: Float
+
+    """
+    Filter by a specific item condition.
+    """
+    condition: ItemCondition
+  }
+
+  type ItemEdge implements Edge {
+    cursor: ID!
+    node: Item!
+  }
+
+  type ItemConnection implements Connection {
+    edges: [ItemEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+  }
+
   type CommentEdge implements Edge {
     cursor: ID!
     node: User!
@@ -68,7 +111,7 @@ export const itemTypeDefs = gql`
     condition: ItemCondition!
     imageUrls: [String!]!
     location: String
-    createdAt: String! # Use String for ISO date format
+    createdAt: String # Use String for ISO date format
     """
     The user who listed this item for sale.
     """
@@ -88,6 +131,15 @@ export const itemTypeDefs = gql`
     Fetches a single item by its unique ID.
     """
     item(id: ID!): Item
+
+    """
+    Fetches a paginated list of items, with optional filtering and sorting.
+    """
+    items(
+      first: Int!
+      after: String
+      filter: ItemsFilterInput # You could also add sorting options here, e.g., sortBy: ItemSortInput
+    ): ItemConnection!
   }
 
   extend type Mutation {

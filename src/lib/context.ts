@@ -19,6 +19,7 @@ import { generateUserLoader } from '@/loaders/user.loader.js';
 import { generateFollowModel } from '@/models/follow.model.js';
 import { generateCategoryLoader } from '@/loaders/category.loader.js';
 import { generateCategoryModel } from '@/models/category.model.js';
+import { generateItemModels } from '@/models/item.model.js';
 
 /**
  * Creates a context for the application as a global context
@@ -70,6 +71,7 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
     auth: generateAuthModel(modelContet),
     follow: generateFollowModel(modelContet),
     category: generateCategoryModel(modelContet),
+    item: generateItemModels(modelContet),
   };
 
   return {
