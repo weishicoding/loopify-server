@@ -78,9 +78,42 @@ export const itemTypeDefs = gql`
     condition: ItemCondition
   }
 
+  type ItemDetail {
+    id: ID!
+    title: String
+    description: String!
+    price: Float!
+    oldPrice: Float
+    imageUrls: [String!]!
+    """
+    The user who listed this item for sale.
+    """
+    seller: User!
+    condition: ItemCondition!
+    location: String
+    """
+    The category this item belongs to.
+    """
+    category: Categories! # An item must have a category.
+    """
+    Public comments or questions about this item.
+    """
+    comments(first: Int, after: String): CommentConnection!
+  }
+
+  type ItemList {
+    id: ID!
+    title: String
+    description: String!
+    price: Float!
+    oldPrice: Float
+    imageUrl: String!
+    seller: User!
+  }
+
   type ItemEdge implements Edge {
     cursor: ID!
-    node: Item!
+    node: ItemList!
   }
 
   type ItemConnection implements Connection {
@@ -89,9 +122,16 @@ export const itemTypeDefs = gql`
     totalCount: Int!
   }
 
+  type Comment {
+    id: ID!
+    context: String!
+    user: User!
+    children: Comment
+  }
+
   type CommentEdge implements Edge {
     cursor: ID!
-    node: User!
+    node: Comment!
   }
 
   # Define the type of Connection
@@ -101,36 +141,11 @@ export const itemTypeDefs = gql`
     totalCount: Int!
   }
 
-  type Item {
-    id: ID!
-    title: String
-    description: String!
-    isDiscount: Boolean!
-    price: Float!
-    originalPrice: Float!
-    condition: ItemCondition!
-    imageUrls: [String!]!
-    location: String
-    createdAt: String # Use String for ISO date format
-    """
-    The user who listed this item for sale.
-    """
-    seller: User! # An item must have a seller.
-    """
-    The category this item belongs to.
-    """
-    category: Categories! # An item must have a category.
-    """
-    Public comments or questions about this item.
-    """
-    comments(first: Int, after: String): CommentConnection! # Use a Connection for paginated comments
-  }
-
   extend type Query {
     """
     Fetches a single item by its unique ID.
     """
-    item(id: ID!): Item
+    item(id: ID!): ItemDetail
 
     """
     Fetches a paginated list of items, with optional filtering and sorting.

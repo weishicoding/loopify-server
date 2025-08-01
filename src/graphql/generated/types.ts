@@ -35,6 +35,14 @@ export type Categories = {
   name: Scalars['String']['output'];
 };
 
+export type Comment = {
+  __typename?: 'Comment';
+  children?: Maybe<Comment>;
+  context: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  user: User;
+};
+
 export type CommentConnection = Connection & {
   __typename?: 'CommentConnection';
   edges: Array<CommentEdge>;
@@ -45,7 +53,7 @@ export type CommentConnection = Connection & {
 export type CommentEdge = Edge & {
   __typename?: 'CommentEdge';
   cursor: Scalars['ID']['output'];
-  node: User;
+  node: Comment;
 };
 
 /** A generic connection type, conforming to the Relay Cursor Connections Specification. */
@@ -107,32 +115,6 @@ export type GenericResponse = {
   success: Scalars['Boolean']['output'];
 };
 
-export type Item = {
-  __typename?: 'Item';
-  /** The category this item belongs to. */
-  category: Categories;
-  /** Public comments or questions about this item. */
-  comments: CommentConnection;
-  condition: ItemCondition;
-  createdAt: Scalars['String']['output'];
-  description: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  imageUrls: Array<Scalars['String']['output']>;
-  isDiscount: Scalars['Boolean']['output'];
-  location?: Maybe<Scalars['String']['output']>;
-  originalPrice: Scalars['Float']['output'];
-  price: Scalars['Float']['output'];
-  /** The user who listed this item for sale. */
-  seller: User;
-  title?: Maybe<Scalars['String']['output']>;
-};
-
-
-export type ItemCommentsArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-};
-
 export enum ItemCondition {
   ForParts = 'FOR_PARTS',
   LikeNew = 'LIKE_NEW',
@@ -147,10 +129,45 @@ export type ItemConnection = Connection & {
   totalCount: Scalars['Int']['output'];
 };
 
+export type ItemDetail = {
+  __typename?: 'ItemDetail';
+  /** The category this item belongs to. */
+  category: Categories;
+  /** Public comments or questions about this item. */
+  comments: CommentConnection;
+  condition: ItemCondition;
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  imageUrls: Array<Scalars['String']['output']>;
+  location?: Maybe<Scalars['String']['output']>;
+  oldPrice?: Maybe<Scalars['Float']['output']>;
+  price: Scalars['Float']['output'];
+  /** The user who listed this item for sale. */
+  seller: User;
+  title?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type ItemDetailCommentsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type ItemEdge = Edge & {
   __typename?: 'ItemEdge';
   cursor: Scalars['ID']['output'];
-  node: Item;
+  node: ItemList;
+};
+
+export type ItemList = {
+  __typename?: 'ItemList';
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  imageUrl: Scalars['String']['output'];
+  oldPrice?: Maybe<Scalars['Float']['output']>;
+  price: Scalars['Float']['output'];
+  seller: User;
+  title?: Maybe<Scalars['String']['output']>;
 };
 
 export type ItemsFilterInput = {
@@ -240,7 +257,7 @@ export type Query = {
   _empty?: Maybe<Scalars['String']['output']>;
   categories?: Maybe<Categories>;
   /** Fetches a single item by its unique ID. */
-  item?: Maybe<Item>;
+  item?: Maybe<ItemDetail>;
   /** Fetches a paginated list of items, with optional filtering and sorting. */
   items: ItemConnection;
   /** Get the currently authenticated user's profile. */
@@ -386,7 +403,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
   Connection: ( Omit<CommentConnection, 'edges'> & { edges: Array<_RefType['CommentEdge']> } ) | ( Omit<ItemConnection, 'edges'> & { edges: Array<_RefType['ItemEdge']> } ) | ( Omit<UserConnection, 'edges'> & { edges: Array<_RefType['UserEdge']> } );
-  Edge: ( Omit<CommentEdge, 'node'> & { node: _RefType['User'] } ) | ( Omit<ItemEdge, 'node'> & { node: _RefType['Item'] } ) | ( Omit<UserEdge, 'node'> & { node: _RefType['User'] } );
+  Edge: ( Omit<CommentEdge, 'node'> & { node: _RefType['Comment'] } ) | ( Omit<ItemEdge, 'node'> & { node: _RefType['ItemList'] } ) | ( Omit<UserEdge, 'node'> & { node: _RefType['User'] } );
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -394,8 +411,9 @@ export type ResolversTypes = {
   AuthPayload: ResolverTypeWrapper<AuthPayload>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Categories: ResolverTypeWrapper<Categories>;
+  Comment: ResolverTypeWrapper<Omit<Comment, 'children' | 'user'> & { children?: Maybe<ResolversTypes['Comment']>, user: ResolversTypes['User'] }>;
   CommentConnection: ResolverTypeWrapper<Omit<CommentConnection, 'edges'> & { edges: Array<ResolversTypes['CommentEdge']> }>;
-  CommentEdge: ResolverTypeWrapper<Omit<CommentEdge, 'node'> & { node: ResolversTypes['User'] }>;
+  CommentEdge: ResolverTypeWrapper<Omit<CommentEdge, 'node'> & { node: ResolversTypes['Comment'] }>;
   Connection: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Connection']>;
   CreateItemInput: CreateItemInput;
   Edge: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Edge']>;
@@ -405,10 +423,11 @@ export type ResolversTypes = {
   GenericResponse: ResolverTypeWrapper<GenericResponse>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
-  Item: ResolverTypeWrapper<Omit<Item, 'comments' | 'seller'> & { comments: ResolversTypes['CommentConnection'], seller: ResolversTypes['User'] }>;
   ItemCondition: ItemCondition;
   ItemConnection: ResolverTypeWrapper<Omit<ItemConnection, 'edges'> & { edges: Array<ResolversTypes['ItemEdge']> }>;
-  ItemEdge: ResolverTypeWrapper<Omit<ItemEdge, 'node'> & { node: ResolversTypes['Item'] }>;
+  ItemDetail: ResolverTypeWrapper<Omit<ItemDetail, 'comments' | 'seller'> & { comments: ResolversTypes['CommentConnection'], seller: ResolversTypes['User'] }>;
+  ItemEdge: ResolverTypeWrapper<Omit<ItemEdge, 'node'> & { node: ResolversTypes['ItemList'] }>;
+  ItemList: ResolverTypeWrapper<Omit<ItemList, 'seller'> & { seller: ResolversTypes['User'] }>;
   ItemsFilterInput: ItemsFilterInput;
   Mutation: ResolverTypeWrapper<{}>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -424,8 +443,9 @@ export type ResolversParentTypes = {
   AuthPayload: AuthPayload;
   Boolean: Scalars['Boolean']['output'];
   Categories: Categories;
+  Comment: Omit<Comment, 'children' | 'user'> & { children?: Maybe<ResolversParentTypes['Comment']>, user: ResolversParentTypes['User'] };
   CommentConnection: Omit<CommentConnection, 'edges'> & { edges: Array<ResolversParentTypes['CommentEdge']> };
-  CommentEdge: Omit<CommentEdge, 'node'> & { node: ResolversParentTypes['User'] };
+  CommentEdge: Omit<CommentEdge, 'node'> & { node: ResolversParentTypes['Comment'] };
   Connection: ResolversInterfaceTypes<ResolversParentTypes>['Connection'];
   CreateItemInput: CreateItemInput;
   Edge: ResolversInterfaceTypes<ResolversParentTypes>['Edge'];
@@ -435,9 +455,10 @@ export type ResolversParentTypes = {
   GenericResponse: GenericResponse;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
-  Item: Omit<Item, 'comments' | 'seller'> & { comments: ResolversParentTypes['CommentConnection'], seller: ResolversParentTypes['User'] };
   ItemConnection: Omit<ItemConnection, 'edges'> & { edges: Array<ResolversParentTypes['ItemEdge']> };
-  ItemEdge: Omit<ItemEdge, 'node'> & { node: ResolversParentTypes['Item'] };
+  ItemDetail: Omit<ItemDetail, 'comments' | 'seller'> & { comments: ResolversParentTypes['CommentConnection'], seller: ResolversParentTypes['User'] };
+  ItemEdge: Omit<ItemEdge, 'node'> & { node: ResolversParentTypes['ItemList'] };
+  ItemList: Omit<ItemList, 'seller'> & { seller: ResolversParentTypes['User'] };
   ItemsFilterInput: ItemsFilterInput;
   Mutation: {};
   PageInfo: PageInfo;
@@ -466,6 +487,14 @@ export type CategoriesResolvers<ContextType = MyContext, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CommentResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
+  children?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
+  context?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CommentConnectionResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['CommentConnection'] = ResolversParentTypes['CommentConnection']> = {
   edges?: Resolver<Array<ResolversTypes['CommentEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
@@ -475,7 +504,7 @@ export type CommentConnectionResolvers<ContextType = MyContext, ParentType exten
 
 export type CommentEdgeResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['CommentEdge'] = ResolversParentTypes['CommentEdge']> = {
   cursor?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -504,23 +533,6 @@ export type GenericResponseResolvers<ContextType = MyContext, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type ItemResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = {
-  category?: Resolver<ResolversTypes['Categories'], ParentType, ContextType>;
-  comments?: Resolver<ResolversTypes['CommentConnection'], ParentType, ContextType, Partial<ItemCommentsArgs>>;
-  condition?: Resolver<ResolversTypes['ItemCondition'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  imageUrls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  isDiscount?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  originalPrice?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  seller?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type ItemConnectionResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemConnection'] = ResolversParentTypes['ItemConnection']> = {
   edges?: Resolver<Array<ResolversTypes['ItemEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
@@ -528,9 +540,35 @@ export type ItemConnectionResolvers<ContextType = MyContext, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ItemDetailResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = {
+  category?: Resolver<ResolversTypes['Categories'], ParentType, ContextType>;
+  comments?: Resolver<ResolversTypes['CommentConnection'], ParentType, ContextType, Partial<ItemDetailCommentsArgs>>;
+  condition?: Resolver<ResolversTypes['ItemCondition'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  imageUrls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  oldPrice?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  seller?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ItemEdgeResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemEdge'] = ResolversParentTypes['ItemEdge']> = {
   cursor?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['Item'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['ItemList'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ItemListResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemList'] = ResolversParentTypes['ItemList']> = {
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  imageUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  oldPrice?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  seller?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -555,7 +593,7 @@ export type PageInfoResolvers<ContextType = MyContext, ParentType extends Resolv
 export type QueryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   _empty?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   categories?: Resolver<Maybe<ResolversTypes['Categories']>, ParentType, ContextType, RequireFields<QueryCategoriesArgs, 'id'>>;
-  item?: Resolver<Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<QueryItemArgs, 'id'>>;
+  item?: Resolver<Maybe<ResolversTypes['ItemDetail']>, ParentType, ContextType, RequireFields<QueryItemArgs, 'id'>>;
   items?: Resolver<ResolversTypes['ItemConnection'], ParentType, ContextType, RequireFields<QueryItemsArgs, 'first'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   topLevelCategories?: Resolver<Array<Maybe<ResolversTypes['Categories']>>, ParentType, ContextType>;
@@ -591,15 +629,17 @@ export type UserEdgeResolvers<ContextType = MyContext, ParentType extends Resolv
 export type Resolvers<ContextType = MyContext> = {
   AuthPayload?: AuthPayloadResolvers<ContextType>;
   Categories?: CategoriesResolvers<ContextType>;
+  Comment?: CommentResolvers<ContextType>;
   CommentConnection?: CommentConnectionResolvers<ContextType>;
   CommentEdge?: CommentEdgeResolvers<ContextType>;
   Connection?: ConnectionResolvers<ContextType>;
   Edge?: EdgeResolvers<ContextType>;
   FileUploadResponse?: FileUploadResponseResolvers<ContextType>;
   GenericResponse?: GenericResponseResolvers<ContextType>;
-  Item?: ItemResolvers<ContextType>;
   ItemConnection?: ItemConnectionResolvers<ContextType>;
+  ItemDetail?: ItemDetailResolvers<ContextType>;
   ItemEdge?: ItemEdgeResolvers<ContextType>;
+  ItemList?: ItemListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
