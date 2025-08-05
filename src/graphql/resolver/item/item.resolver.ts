@@ -65,7 +65,7 @@ const itemDetailResolver: ItemDetailResolvers<MyContext> = {
 };
 
 const query: QueryResolvers<MyContext> = {
-  item: async (_parent, { id }, context: MyContext): Promise<ItemPayload | null> => {
+  item: async (_parent, { id }, context: MyContext) => {
     const item = await context.models.item.findItemById(id);
     if (!item) {
       return null;
