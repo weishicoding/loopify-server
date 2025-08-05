@@ -38,7 +38,7 @@ export type Categories = {
 export type Comment = {
   __typename?: 'Comment';
   children?: Maybe<Comment>;
-  context: Scalars['String']['output'];
+  content: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   user: User;
 };
@@ -132,10 +132,10 @@ export type ItemConnection = Connection & {
 export type ItemDetail = {
   __typename?: 'ItemDetail';
   /** The category this item belongs to. */
-  category: Categories;
+  category?: Maybe<Categories>;
   /** Public comments or questions about this item. */
   comments: CommentConnection;
-  condition: ItemCondition;
+  condition?: Maybe<ItemCondition>;
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   imageUrls: Array<Scalars['String']['output']>;
@@ -489,7 +489,7 @@ export type CategoriesResolvers<ContextType = MyContext, ParentType extends Reso
 
 export type CommentResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
   children?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
-  context?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -541,9 +541,9 @@ export type ItemConnectionResolvers<ContextType = MyContext, ParentType extends 
 };
 
 export type ItemDetailResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = {
-  category?: Resolver<ResolversTypes['Categories'], ParentType, ContextType>;
+  category?: Resolver<Maybe<ResolversTypes['Categories']>, ParentType, ContextType>;
   comments?: Resolver<ResolversTypes['CommentConnection'], ParentType, ContextType, Partial<ItemDetailCommentsArgs>>;
-  condition?: Resolver<ResolversTypes['ItemCondition'], ParentType, ContextType>;
+  condition?: Resolver<Maybe<ResolversTypes['ItemCondition']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   imageUrls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

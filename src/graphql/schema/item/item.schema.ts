@@ -89,12 +89,12 @@ export const itemTypeDefs = gql`
     The user who listed this item for sale.
     """
     seller: User!
-    condition: ItemCondition!
+    condition: ItemCondition
     location: String
     """
     The category this item belongs to.
     """
-    category: Categories! # An item must have a category.
+    category: Categories
     """
     Public comments or questions about this item.
     """
@@ -124,7 +124,7 @@ export const itemTypeDefs = gql`
 
   type Comment {
     id: ID!
-    context: String!
+    content: String!
     user: User!
     children: Comment
   }
