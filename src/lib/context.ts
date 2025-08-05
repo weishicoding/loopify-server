@@ -20,6 +20,7 @@ import { generateFollowModel } from '@/models/follow.model.js';
 import { generateCategoryLoader } from '@/loaders/category.loader.js';
 import { generateCategoryModel } from '@/models/category.model.js';
 import { generateItemModels } from '@/models/item.model.js';
+import { generateCommentModel } from '@/models/comment.model.js';
 
 /**
  * Creates a context for the application as a global context
@@ -72,6 +73,7 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
     follow: generateFollowModel(modelContet),
     category: generateCategoryModel(modelContet),
     item: generateItemModels(modelContet),
+    comment: generateCommentModel(modelContet),
   };
 
   return {

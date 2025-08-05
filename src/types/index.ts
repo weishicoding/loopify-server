@@ -5,6 +5,7 @@ import { generateCategoryModel } from '@/models/category.model.js';
 import { generateFollowModel } from '@/models/follow.model.js';
 import { generateItemModels } from '@/models/item.model.js';
 import { generateUserModel } from '@/models/user.model.js';
+import { generateCommentModel } from '@/models/comment.model.js';
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { Request } from 'express';
 import { Redis } from 'ioredis';
@@ -47,6 +48,7 @@ export interface MyModels {
   follow: ReturnType<typeof generateFollowModel>;
   category: ReturnType<typeof generateCategoryModel>;
   item: ReturnType<typeof generateItemModels>;
+  comment: ReturnType<typeof generateCommentModel>;
 }
 
 /**
