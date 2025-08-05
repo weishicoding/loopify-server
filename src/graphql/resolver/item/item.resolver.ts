@@ -4,10 +4,34 @@ import {
   QueryResolvers,
 } from '@/graphql/generated/types.js';
 import { MyContext } from '@/types/index.js';
+import { ItemPayload } from '@/models/item.model.js';
 
 const mutation = {};
 
-const itemDetail: ItemDetailResolvers<MyContext> = {
+const itemDetailResolver: ItemDetailResolvers<MyContext> = {
+  // These fields match the DB, so no resolver is needed: id, title, description, condition, location
+
+  price: (parent: ItemPayload) => {
+    return parent.price.toNumber();
+  },
+
+  oldPrice: (parent: ItemPayload) => {
+    if (!parent.oldPrice) return null;
+    return parent.oldPrice.toNumber();
+  },
+
+  imageUrls: (parent: ItemPayload) => {
+    return parent.images.map((image) => image.url);
+  },
+
+  seller: (parent: ItemPayload) => {
+    return parent.seller;
+  },
+
+  category: (parent: ItemPayload) => {
+    return parent.category;
+  },
+
   comments: async (
     parent,
     { first, after }: Partial<ItemDetailCommentsArgs>,
@@ -38,35 +62,15 @@ const itemDetail: ItemDetailResolvers<MyContext> = {
       })),
     };
   },
-  seller: async (parent, _args, context: MyContext) => {
-    const item = await context.models.item.findItemById(parent.id);
-    if (!item?.seller) {
-      throw new Error('Item or seller not found');
-    }
-    return item.seller;
-  },
 };
 
 const query: QueryResolvers<MyContext> = {
-  item: async (_parent, { id }: { id: string }, context: MyContext) => {
+  item: async (_parent, { id }, context: MyContext): Promise<ItemPayload | null> => {
     const item = await context.models.item.findItemById(id);
     if (!item) {
-      throw new Error('Item not found');
+      return null;
     }
-
-    // Return the base object - the comments and seller fields will be resolved by ItemDetail resolvers
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return {
-      id: item.id,
-      title: item.title,
-      description: item.description || '',
-      price: item.price.toNumber(),
-      oldPrice: null,
-      imageUrls: item.images.map((img) => img.url),
-      condition: item.condition || null,
-      location: item.location,
-      category: item.category,
-    } as any;
+    return item;
   },
 
   items: async (_parent, { first, after, filter }, context: MyContext) => {
@@ -92,5 +96,5 @@ const query: QueryResolvers<MyContext> = {
 export const itemResolvers = {
   Mutation: mutation,
   Query: query,
-  ItemDetail: itemDetail,
+  ItemDetail: itemDetailResolver,
 };

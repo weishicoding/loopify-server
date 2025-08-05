@@ -9,6 +9,7 @@ const config: CodegenConfig = {
         contextType: 'src/types/index.js#MyContext',
         mappers: {
           User: '@prisma/client#User as PrismaUser',
+          ItemDetail: '@/models/item.model.js#ItemPayload',
         },
       },
     },

@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { User as PrismaUser } from '@prisma/client';
+import { ItemPayload } from '@/models/item.model.js';
 import { MyContext } from 'src/types/index.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -132,9 +133,9 @@ export type ItemConnection = Connection & {
 export type ItemDetail = {
   __typename?: 'ItemDetail';
   /** The category this item belongs to. */
-  category?: Maybe<Categories>;
+  category: Categories;
   /** Public comments or questions about this item. */
-  comments: CommentConnection;
+  comments?: Maybe<CommentConnection>;
   condition?: Maybe<ItemCondition>;
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -425,7 +426,7 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   ItemCondition: ItemCondition;
   ItemConnection: ResolverTypeWrapper<Omit<ItemConnection, 'edges'> & { edges: Array<ResolversTypes['ItemEdge']> }>;
-  ItemDetail: ResolverTypeWrapper<Omit<ItemDetail, 'comments' | 'seller'> & { comments: ResolversTypes['CommentConnection'], seller: ResolversTypes['User'] }>;
+  ItemDetail: ResolverTypeWrapper<ItemPayload>;
   ItemEdge: ResolverTypeWrapper<Omit<ItemEdge, 'node'> & { node: ResolversTypes['ItemList'] }>;
   ItemList: ResolverTypeWrapper<Omit<ItemList, 'seller'> & { seller: ResolversTypes['User'] }>;
   ItemsFilterInput: ItemsFilterInput;
@@ -456,7 +457,7 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   ItemConnection: Omit<ItemConnection, 'edges'> & { edges: Array<ResolversParentTypes['ItemEdge']> };
-  ItemDetail: Omit<ItemDetail, 'comments' | 'seller'> & { comments: ResolversParentTypes['CommentConnection'], seller: ResolversParentTypes['User'] };
+  ItemDetail: ItemPayload;
   ItemEdge: Omit<ItemEdge, 'node'> & { node: ResolversParentTypes['ItemList'] };
   ItemList: Omit<ItemList, 'seller'> & { seller: ResolversParentTypes['User'] };
   ItemsFilterInput: ItemsFilterInput;
@@ -541,8 +542,8 @@ export type ItemConnectionResolvers<ContextType = MyContext, ParentType extends 
 };
 
 export type ItemDetailResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = {
-  category?: Resolver<Maybe<ResolversTypes['Categories']>, ParentType, ContextType>;
-  comments?: Resolver<ResolversTypes['CommentConnection'], ParentType, ContextType, Partial<ItemDetailCommentsArgs>>;
+  category?: Resolver<ResolversTypes['Categories'], ParentType, ContextType>;
+  comments?: Resolver<Maybe<ResolversTypes['CommentConnection']>, ParentType, ContextType, Partial<ItemDetailCommentsArgs>>;
   condition?: Resolver<Maybe<ResolversTypes['ItemCondition']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

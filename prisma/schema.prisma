@@ -92,6 +92,7 @@ model Item {
   title       String
   description String?  @db.Text
   price       Decimal  @db.Decimal(10, 2) //This stores up to 10 digits, with 2 for cents.
+  oldPrice    Decimal  @db.Decimal(10, 2)
   condition   ItemCondition @default(USED)
   status     ItemStatus  @default(AVAILABLE)
   location    String?

@@ -78,6 +78,25 @@ export const itemTypeDefs = gql`
     condition: ItemCondition
   }
 
+  type Comment {
+    id: ID!
+    content: String!
+    user: User!
+    children: Comment
+  }
+
+  type CommentEdge implements Edge {
+    cursor: ID!
+    node: Comment!
+  }
+
+  # Define the type of Connection
+  type CommentConnection implements Connection {
+    edges: [CommentEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+  }
+
   type ItemDetail {
     id: ID!
     title: String
@@ -94,11 +113,11 @@ export const itemTypeDefs = gql`
     """
     The category this item belongs to.
     """
-    category: Categories
+    category: Categories!
     """
     Public comments or questions about this item.
     """
-    comments(first: Int, after: String): CommentConnection!
+    comments(first: Int, after: String): CommentConnection
   }
 
   type ItemList {
@@ -122,30 +141,11 @@ export const itemTypeDefs = gql`
     totalCount: Int!
   }
 
-  type Comment {
-    id: ID!
-    content: String!
-    user: User!
-    children: Comment
-  }
-
-  type CommentEdge implements Edge {
-    cursor: ID!
-    node: Comment!
-  }
-
-  # Define the type of Connection
-  type CommentConnection implements Connection {
-    edges: [CommentEdge!]!
-    pageInfo: PageInfo!
-    totalCount: Int!
-  }
-
   extend type Query {
     """
     Fetches a single item by its unique ID.
     """
-    item(id: ID!): ItemDetail
+    item(id: ID!): ItemDetail @auth
 
     """
     Fetches a paginated list of items, with optional filtering and sorting.

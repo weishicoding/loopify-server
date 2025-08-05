@@ -2,10 +2,20 @@ import { ItemsFilterInput } from '@/graphql/generated/types.js';
 import { ConnectionArguments, CoreServiceContext } from '@/types/index.js';
 import { Prisma } from '@prisma/client';
 
+export type ItemPayload = Prisma.ItemGetPayload<{
+  include: {
+    seller: true;
+    category: true;
+    images: {
+      orderBy: { sort: 'asc' };
+    };
+  };
+}>;
+
 export const generateItemModels = (context: CoreServiceContext) => {
   const { prisma } = context;
   return {
-    findItemById: async (id: string) => {
+    findItemById: async (id: string): Promise<ItemPayload | null> => {
       return await prisma.item.findUnique({
         where: { id },
         include: {
