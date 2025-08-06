@@ -7,6 +7,7 @@ import { followTypeDefs } from './user/follow.schema.js';
 import { uploadTypeDefs } from './upload/upload.schema.js';
 import { categoryTypeDefs } from './item/category.schema.js';
 import { itemTypeDefs } from './item/item.schema.js';
+import { collectionTypeDefs } from './item/collection.schema.js';
 
 const baseTypeDefs = gql`
   type Query {
@@ -27,4 +28,5 @@ export const typeDefs = [
   uploadTypeDefs,
   categoryTypeDefs,
   itemTypeDefs,
+  collectionTypeDefs,
 ];

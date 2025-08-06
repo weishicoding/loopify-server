@@ -108,6 +108,7 @@ model Item {
   images      Image[]
   comments    Comment[]
   collectedBy     ItemCollection[] @relation("ItemCollects")
+  collectionsCount Int @default(0) @map("collections_count")
   order       Order?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")

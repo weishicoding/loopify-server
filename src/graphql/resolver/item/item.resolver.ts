@@ -1,12 +1,39 @@
 import {
   ItemDetailCommentsArgs,
   ItemDetailResolvers,
+  ItemListResolvers,
   QueryResolvers,
+  MutationResolvers,
 } from '@/graphql/generated/types.js';
 import { MyContext } from '@/types/index.js';
 import { ItemPayload } from '@/models/item.model.js';
+import logger from '@/lib/logger.js';
 
-const mutation = {};
+const mutation: MutationResolvers<MyContext> = {
+  createItem: async (_parent, { input }, context: MyContext) => {
+    const { userId } = context;
+    if (!userId) {
+      return {
+        success: false,
+        message: 'Authentication required',
+      };
+    }
+
+    try {
+      await context.models.item.createItem(userId, input);
+      return {
+        success: true,
+        message: 'Item created successfully',
+      };
+    } catch (error) {
+      logger.error('Error creating item:', error);
+      return {
+        success: false,
+        message: 'Failed to create item',
+      };
+    }
+  },
+};
 
 const itemDetailResolver: ItemDetailResolvers<MyContext> = {
   // These fields match the DB, so no resolver is needed: id, title, description, condition, location
@@ -62,6 +89,18 @@ const itemDetailResolver: ItemDetailResolvers<MyContext> = {
       })),
     };
   },
+
+  collectionsCount: (parent: ItemPayload) => {
+    return parent.collectionsCount;
+  },
+
+  isCollectedByMe: async (parent: ItemPayload, _args, context: MyContext) => {
+    if (!context.userId || !context.getItemCollectionLoader) {
+      return false;
+    }
+    const loader = context.getItemCollectionLoader(context.userId);
+    return await loader.load(parent.id);
+  },
 };
 
 const query: QueryResolvers<MyContext> = {
@@ -83,13 +122,25 @@ const query: QueryResolvers<MyContext> = {
           id: edge.node.id,
           title: edge.node.title,
           description: edge.node.description || '',
+          collectionsCount: edge.node.collectionsCount,
           price: edge.node.price.toNumber(),
           oldPrice: null,
           imageUrl: edge.node.images[0]?.url || '',
           seller: edge.node.seller,
+          isCollectedByMe: false,
         },
       })),
     };
+  },
+};
+
+const itemListResolver: ItemListResolvers<MyContext> = {
+  isCollectedByMe: async (parent, _args, context: MyContext) => {
+    if (!context.userId || !context.getItemCollectionLoader) {
+      return false;
+    }
+    const loader = context.getItemCollectionLoader(context.userId);
+    return await loader.load(parent.id);
   },
 };
 
@@ -97,4 +148,5 @@ export const itemResolvers = {
   Mutation: mutation,
   Query: query,
   ItemDetail: itemDetailResolver,
+  ItemList: itemListResolver,
 };

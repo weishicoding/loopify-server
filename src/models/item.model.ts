@@ -1,4 +1,4 @@
-import { ItemsFilterInput } from '@/graphql/generated/types.js';
+import { ItemsFilterInput, CreateItemInput } from '@/graphql/generated/types.js';
 import { ConnectionArguments, CoreServiceContext } from '@/types/index.js';
 import { Prisma } from '@prisma/client';
 
@@ -95,6 +95,54 @@ export const generateItemModels = (context: CoreServiceContext) => {
         },
         edges,
       };
+    },
+    createItem: async (sellerId: string, input: CreateItemInput): Promise<ItemPayload> => {
+      const { title, description, price, condition, categoryId, imageUrls, location } = input;
+      
+      return await prisma.$transaction(async (tx) => {
+        const item = await tx.item.create({
+          data: {
+            title: title || '',
+            description: description,
+            price: price,
+            oldPrice: price,
+            condition: condition,
+            sellerId: sellerId,
+            categoryId: categoryId,
+            location: location,
+          },
+          include: {
+            seller: true,
+            category: true,
+            images: {
+              orderBy: { sort: 'asc' },
+            },
+          },
+        });
+
+        await Promise.all(
+          imageUrls.map((url, index) =>
+            tx.image.create({
+              data: {
+                url: url,
+                sort: index,
+                itemId: item.id,
+              },
+            })
+          )
+        );
+
+        return await tx.item.findUniqueOrThrow({
+          where: { id: item.id },
+          include: {
+            seller: true,
+            category: true,
+            images: {
+              orderBy: { sort: 'asc' },
+            },
+          },
+        });
+      });
     },
   };
 };

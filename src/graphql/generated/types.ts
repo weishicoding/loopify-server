@@ -134,12 +134,16 @@ export type ItemDetail = {
   __typename?: 'ItemDetail';
   /** The category this item belongs to. */
   category: Categories;
+  /** Total number of times this item has been collected */
+  collectionsCount: Scalars['Int']['output'];
   /** Public comments or questions about this item. */
   comments?: Maybe<CommentConnection>;
   condition?: Maybe<ItemCondition>;
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   imageUrls: Array<Scalars['String']['output']>;
+  /** Whether the current user has collected this item */
+  isCollectedByMe: Scalars['Boolean']['output'];
   location?: Maybe<Scalars['String']['output']>;
   oldPrice?: Maybe<Scalars['Float']['output']>;
   price: Scalars['Float']['output'];
@@ -162,9 +166,13 @@ export type ItemEdge = Edge & {
 
 export type ItemList = {
   __typename?: 'ItemList';
+  /** Total number of times this item has been collected */
+  collectionsCount: Scalars['Int']['output'];
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   imageUrl: Scalars['String']['output'];
+  /** Whether the current user has collected this item */
+  isCollectedByMe: Scalars['Boolean']['output'];
   oldPrice?: Maybe<Scalars['Float']['output']>;
   price: Scalars['Float']['output'];
   seller: User;
@@ -189,6 +197,8 @@ export type ItemsFilterInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   _empty?: Maybe<Scalars['String']['output']>;
+  /** Adds an item to the current user's collection */
+  collectItem: ItemDetail;
   createItem: GenericResponse;
   /** A user follow other user */
   followUser: GenericResponse;
@@ -197,8 +207,15 @@ export type Mutation = {
   logout: GenericResponse;
   refreshToken: AuthPayload;
   sendEmailCode: GenericResponse;
+  /** Removes an item from the current user's collection */
+  uncollectItem: ItemDetail;
   /** A user cancel to follow other user */
   unfollowUser: GenericResponse;
+};
+
+
+export type MutationCollectItemArgs = {
+  itemId: Scalars['ID']['input'];
 };
 
 
@@ -236,6 +253,11 @@ export type MutationRefreshTokenArgs = {
 
 export type MutationSendEmailCodeArgs = {
   email: Scalars['String']['input'];
+};
+
+
+export type MutationUncollectItemArgs = {
+  itemId: Scalars['ID']['input'];
 };
 
 
@@ -543,11 +565,13 @@ export type ItemConnectionResolvers<ContextType = MyContext, ParentType extends 
 
 export type ItemDetailResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = {
   category?: Resolver<ResolversTypes['Categories'], ParentType, ContextType>;
+  collectionsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   comments?: Resolver<Maybe<ResolversTypes['CommentConnection']>, ParentType, ContextType, Partial<ItemDetailCommentsArgs>>;
   condition?: Resolver<Maybe<ResolversTypes['ItemCondition']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   imageUrls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  isCollectedByMe?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oldPrice?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -563,9 +587,11 @@ export type ItemEdgeResolvers<ContextType = MyContext, ParentType extends Resolv
 };
 
 export type ItemListResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['ItemList'] = ResolversParentTypes['ItemList']> = {
+  collectionsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   imageUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isCollectedByMe?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   oldPrice?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   price?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   seller?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -575,6 +601,7 @@ export type ItemListResolvers<ContextType = MyContext, ParentType extends Resolv
 
 export type MutationResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   _empty?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  collectItem?: Resolver<ResolversTypes['ItemDetail'], ParentType, ContextType, RequireFields<MutationCollectItemArgs, 'itemId'>>;
   createItem?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationCreateItemArgs, 'input'>>;
   followUser?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationFollowUserArgs, 'followerId' | 'followingId'>>;
   generateUploadUrl?: Resolver<Array<ResolversTypes['FileUploadResponse']>, ParentType, ContextType, RequireFields<MutationGenerateUploadUrlArgs, 'files'>>;
@@ -582,6 +609,7 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   logout?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationLogoutArgs, 'refreshToken'>>;
   refreshToken?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   sendEmailCode?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationSendEmailCodeArgs, 'email'>>;
+  uncollectItem?: Resolver<ResolversTypes['ItemDetail'], ParentType, ContextType, RequireFields<MutationUncollectItemArgs, 'itemId'>>;
   unfollowUser?: Resolver<ResolversTypes['GenericResponse'], ParentType, ContextType, RequireFields<MutationUnfollowUserArgs, 'followerId' | 'followingId'>>;
 };
 

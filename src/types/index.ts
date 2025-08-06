@@ -6,6 +6,8 @@ import { generateFollowModel } from '@/models/follow.model.js';
 import { generateItemModels } from '@/models/item.model.js';
 import { generateUserModel } from '@/models/user.model.js';
 import { generateCommentModel } from '@/models/comment.model.js';
+import { generateItemCollectionModel } from '@/models/itemCollection.model.js';
+import { generateItemCollectionLoader } from '@/loaders/itemCollection.loader.js';
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { Request } from 'express';
 import { Redis } from 'ioredis';
@@ -49,6 +51,7 @@ export interface MyModels {
   category: ReturnType<typeof generateCategoryModel>;
   item: ReturnType<typeof generateItemModels>;
   comment: ReturnType<typeof generateCommentModel>;
+  itemCollection: ReturnType<typeof generateItemCollectionModel>;
 }
 
 /**
@@ -65,6 +68,7 @@ export interface ModelContext extends BaseContext {
  */
 export interface MyContext extends ModelContext {
   models: MyModels;
+  getItemCollectionLoader?: (userId: string) => ReturnType<typeof generateItemCollectionLoader>;
 }
 
 /**

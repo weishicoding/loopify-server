@@ -21,6 +21,8 @@ import { generateCategoryLoader } from '@/loaders/category.loader.js';
 import { generateCategoryModel } from '@/models/category.model.js';
 import { generateItemModels } from '@/models/item.model.js';
 import { generateCommentModel } from '@/models/comment.model.js';
+import { generateItemCollectionModel } from '@/models/itemCollection.model.js';
+import { generateItemCollectionLoader } from '@/loaders/itemCollection.loader.js';
 
 /**
  * Creates a context for the application as a global context
@@ -74,10 +76,23 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
     category: generateCategoryModel(modelContet),
     item: generateItemModels(modelContet),
     comment: generateCommentModel(modelContet),
+    itemCollection: generateItemCollectionModel(modelContet),
   };
 
-  return {
+  const context: MyContext = {
     ...modelContet,
     models,
   };
+
+  // Add helper method to create item collection loader
+  const collectionLoaderCache = new Map();
+  
+  context.getItemCollectionLoader = (userId: string) => {
+    if (!collectionLoaderCache.has(userId)) {
+      collectionLoaderCache.set(userId, generateItemCollectionLoader(context, userId));
+    }
+    return collectionLoaderCache.get(userId);
+  };
+
+  return context;
 };
