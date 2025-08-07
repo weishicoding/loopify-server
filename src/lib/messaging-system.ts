@@ -1,16 +1,15 @@
 import { Server as HttpServer } from 'http';
-import { SocketGateway, socketGateway as socketGatewayVar } from './socket-gateway.js';
-import {
-  MessageQueueService,
-  messageQueueService as messageQueueServiceVar,
-} from '../services/message-queue.js';
+import { SocketGateway } from './socket-gateway.js';
+import { MessageQueueService } from '../services/message-queue.js';
 import {
   PushNotificationService,
-  pushNotificationService as pushNotificationServiceVar,
-  PushNotificationPayload,
+  type PushNotificationPayload,
 } from '../services/push-notification.js';
 import { MyContext } from '@/types/index.js';
 import logger from './logger.js';
+
+// Re-export for external use
+export type { PushNotificationPayload };
 
 export class MessagingSystem {
   private socketGateway: SocketGateway;
@@ -18,7 +17,10 @@ export class MessagingSystem {
   private pushNotificationService: PushNotificationService;
   private isInitialized = false;
 
-  constructor(private httpServer: HttpServer, private context: MyContext) {
+  constructor(
+    private httpServer: HttpServer,
+    private context: MyContext
+  ) {
     this.socketGateway = new SocketGateway(httpServer, context);
     this.messageQueueService = new MessageQueueService(context);
     this.pushNotificationService = new PushNotificationService(context);
@@ -36,17 +38,13 @@ export class MessagingSystem {
       // Start message queue workers
       this.messageQueueService.start();
 
-      // Set global references for other modules to use
-      Object.assign(socketGatewayVar, this.socketGateway);
-      Object.assign(messageQueueServiceVar, this.messageQueueService);
-      Object.assign(pushNotificationServiceVar, this.pushNotificationService);
-
       this.isInitialized = true;
       logger.info('Messaging system initialized successfully');
 
       // Set up graceful shutdown
       this.setupGracefulShutdown();
     } catch (error) {
+      console.log(error);
       logger.error('Failed to initialize messaging system:', error);
       throw error;
     }
@@ -95,12 +93,29 @@ export class MessagingSystem {
     return this.pushNotificationService;
   }
 
+  // Utility methods for external use
+  public sendMessageToUser(userId: string, event: string, data: unknown) {
+    this.socketGateway.sendMessageToUser(userId, event, data);
+  }
+
+  public sendMessageToConversation(conversationId: string, event: string, data: unknown) {
+    this.socketGateway.sendMessageToConversation(conversationId, event, data);
+  }
+
+  public isUserOnline(userId: string): boolean {
+    return this.socketGateway.isUserOnline(userId);
+  }
+
+  public async queuePushNotification(payload: PushNotificationPayload): Promise<void> {
+    await this.pushNotificationService.queueNotification(payload);
+  }
+
   // Health check methods
   public async getHealthStatus(): Promise<{
     socketGateway: { status: 'healthy' | 'unhealthy'; onlineUsers: number };
-    messageQueue: { 
-      status: 'healthy' | 'unhealthy'; 
-      isRunning: boolean; 
+    messageQueue: {
+      status: 'healthy' | 'unhealthy';
+      isRunning: boolean;
       queueStats: {
         highPriorityCount: number;
         normalPriorityCount: number;
@@ -152,29 +167,5 @@ export class MessagingSystem {
   }
 }
 
-// Utility functions for external use
-
-export function sendMessageToUser(userId: string, event: string, data: unknown) {
-  if (socketGatewayVar) {
-    socketGatewayVar.sendMessageToUser(userId, event, data);
-  }
-}
-
-export function sendMessageToConversation(conversationId: string, event: string, data: unknown) {
-  if (socketGatewayVar) {
-    socketGatewayVar.sendMessageToConversation(conversationId, event, data);
-  }
-}
-
-export function isUserOnline(userId: string) {
-  if (socketGatewayVar) {
-    return socketGatewayVar.isUserOnline(userId);
-  }
-  return false;
-}
-
-export async function queuePushNotification(payload: PushNotificationPayload): Promise<void> {
-  if (pushNotificationServiceVar) {
-    await pushNotificationServiceVar.queueNotification(payload);
-  }
-}
+// Utility methods moved to MessagingSystem class
+// Access these through the messagingSystem instance
