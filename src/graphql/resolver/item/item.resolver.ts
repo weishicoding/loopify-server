@@ -7,10 +7,13 @@ import {
 } from '@/graphql/generated/types.js';
 import { MyContext } from '@/types/index.js';
 import { ItemListPayload, ItemPayload } from '@/models/item.model.js';
+import { validateInput } from '@/utils/validation.util.js';
+import itemValidation from '@/validations/item.validation.js';
 import logger from '@/lib/logger.js';
 
 const mutation: MutationResolvers<MyContext> = {
-  createItem: async (_parent, { input }, context: MyContext) => {
+  createItem: async (_parent, args, context: MyContext) => {
+    validateInput(itemValidation.createItemSchema, args);
     const { userId } = context;
     if (!userId) {
       return {
@@ -20,7 +23,7 @@ const mutation: MutationResolvers<MyContext> = {
     }
 
     try {
-      await context.models.item.createItem(userId, input);
+      await context.models.item.createItem(userId, args.input);
       return {
         success: true,
         message: 'Item created successfully',
@@ -104,7 +107,8 @@ const itemDetailResolver: ItemDetailResolvers<MyContext> = {
 };
 
 const query: QueryResolvers<MyContext> = {
-  item: async (_parent, { id }, context: MyContext) => {
+  item: async (_parent, args, context: MyContext) => {
+    const { id } = validateInput(itemValidation.itemQuerySchema, args);
     const item = await context.models.item.findItemById(id);
     if (!item) {
       return null;
@@ -112,8 +116,10 @@ const query: QueryResolvers<MyContext> = {
     return item;
   },
 
-  items: async (_parent, { first, after, filter }, context: MyContext) => {
-    const connection = await context.models.item.findItemConnection({ first, after }, filter);
+  items: async (_parent, args, context: MyContext) => {
+    const { first, after } = args; // Pagination args excluded from validation
+    validateInput(itemValidation.itemsQuerySchema, args);
+    const connection = await context.models.item.findItemConnection({ first, after }, args.filter);
     // Type assertion needed because GraphQL expects ItemList fields to be resolved by field resolvers
     return connection;
   },

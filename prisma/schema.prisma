@@ -21,7 +21,7 @@ model User {
   id       String      @id @default(cuid())
   email    String   @unique
   name     String?
-  bio      String    @db.Text
+  bio      String?    @db.Text
   lastSeen DateTime?
   avatarUrl String?
   address   String?
@@ -43,6 +43,14 @@ model User {
   // Order relations
   purchases Order[] @relation("ItemBought")
   sales     Order[] @relation("OrderAsSeller")
+  
+  // Messaging relations
+  sentMessages     Message[] @relation("MessageSender")
+  conversationParticipants ConversationParticipant[]
+  messageDeliveries MessageDelivery[]
+  
+  // Push notification relations
+  deviceTokens     DeviceToken[] @relation("UserDeviceTokens")
 
   @@map("user")
 }
@@ -110,6 +118,7 @@ model Item {
   collectedBy     ItemCollection[] @relation("ItemCollects")
   collectionsCount Int @default(0) @map("collections_count")
   order       Order?
+  conversations   Conversation[]
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -249,6 +258,151 @@ enum OrderStatus {
   COMPLETED
   CANCELED
   REFUSED
+}
+
+/// ================================
+/// Messaging System
+/// ================================
+
+model Conversation {
+  id              String @id @default(cuid())
+  type            ConversationType @default(DIRECT_MESSAGE)
+  title           String? // For group chats
+  itemId          String? @map("item_id") // For item-related conversations
+  item            Item? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  
+  lastMessageAt   DateTime? @map("last_message_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  participants    ConversationParticipant[]
+  messages        Message[]
+  
+  @@index([type])
+  @@index([itemId])
+  @@index([lastMessageAt])
+  @@map("conversation")
+}
+
+enum ConversationType {
+  DIRECT_MESSAGE
+  GROUP_CHAT
+  ITEM_INQUIRY
+}
+
+model ConversationParticipant {
+  id             String @id @default(cuid())
+  conversationId String @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  userId         String @map("user_id")
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  joinedAt       DateTime @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+  isActive       Boolean @default(true) @map("is_active")
+  
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+  @@map("conversation_participant")
+}
+
+model Message {
+  id             String @id @default(cuid())
+  conversationId String @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  senderId       String @map("sender_id")
+  sender         User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content        String @db.Text
+  messageType    MessageType @default(TEXT) @map("message_type")
+  
+  parentMessageId String? @map("parent_message_id")
+  parentMessage   Message? @relation("MessageReplies", fields: [parentMessageId], references: [id], onDelete: SetNull)
+  replies         Message[] @relation("MessageReplies")
+  
+  deliveryStatus MessageDeliveryStatus @default(SENT) @map("delivery_status")
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  editedAt       DateTime? @map("edited_at")
+  
+  deliveries     MessageDelivery[]
+  
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@index([parentMessageId])
+  @@map("message")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM_NOTIFICATION
+  ITEM_SHARE
+}
+
+enum MessageDeliveryStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model MessageDelivery {
+  id          String @id @default(cuid())
+  messageId   String @map("message_id")
+  message     Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  recipientId String @map("recipient_id")
+  recipient   User @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  
+  deliveredAt DateTime? @map("delivered_at")
+  readAt      DateTime? @map("read_at")
+  deviceType  String? @map("device_type")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@unique([messageId, recipientId])
+  @@index([recipientId])
+  @@index([messageId])
+  @@map("message_delivery")
+}
+
+/// ================================
+/// Push Notification System
+/// ================================
+
+model DeviceToken {
+  id          String @id @default(cuid())
+  
+  userId      String @map("user_id")
+  user        User @relation("UserDeviceTokens", fields: [userId], references: [id], onDelete: Cascade)
+  
+  token       String @db.Text // Device token (can be long)
+  platform    DevicePlatform
+  deviceInfo  String? @db.Text @map("device_info") // Device name, model, OS version
+  isActive    Boolean @default(true) @map("is_active")
+  
+  // Notification preferences
+  enabledFor  String[] @default(["messages", "orders", "follows"]) @map("enabled_for")
+  
+  lastUsedAt  DateTime @default(now()) @map("last_used_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@unique([userId, token])
+  @@index([userId])
+  @@index([platform])
+  @@index([isActive])
+  @@map("device_token")
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
 }
 
 

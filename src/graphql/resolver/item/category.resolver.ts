@@ -4,6 +4,8 @@ import {
   QueryResolvers,
 } from '@/graphql/generated/types.js';
 import { MyContext } from '@/types/index.js';
+import { validateInput } from '@/utils/validation.util.js';
+import categoryValidation from '@/validations/category.validation.js';
 
 const mutation: MutationResolvers<MyContext> = {};
 
@@ -11,7 +13,8 @@ const query: QueryResolvers<MyContext> = {
   topLevelCategories: (_parent, _any, context) => {
     return context.models.category.findTopLevelCategories();
   },
-  categories: async (_parent, { id }, context) => {
+  categories: async (_parent, args, context) => {
+    const { id } = validateInput(categoryValidation.categoryQuerySchema, args);
     return await context.models.category.findCategoryById(id);
   },
 };

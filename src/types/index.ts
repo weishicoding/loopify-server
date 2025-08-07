@@ -7,6 +7,7 @@ import { generateItemModels } from '@/models/item.model.js';
 import { generateUserModel } from '@/models/user.model.js';
 import { generateCommentModel } from '@/models/comment.model.js';
 import { generateItemCollectionModel } from '@/models/itemCollection.model.js';
+import { generateMessagingModel } from '@/models/messaging.model.js';
 import { generateItemCollectionLoader } from '@/loaders/itemCollection.loader.js';
 import { PrismaClient, User as PrismaUser } from '@prisma/client';
 import { Request } from 'express';
@@ -52,6 +53,7 @@ export interface MyModels {
   item: ReturnType<typeof generateItemModels>;
   comment: ReturnType<typeof generateCommentModel>;
   itemCollection: ReturnType<typeof generateItemCollectionModel>;
+  messaging: ReturnType<typeof generateMessagingModel>;
 }
 
 /**

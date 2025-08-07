@@ -1,9 +1,12 @@
 import { MyContext } from '@/types/index.js';
 import { MutationResolvers } from '../../generated/types.js';
+import { validateInput } from '@/utils/validation.util.js';
+import collectionValidation from '@/validations/collection.validation.js';
 import { ApolloError, AuthenticationError } from 'apollo-server-errors';
 
 const mutation: MutationResolvers<MyContext> = {
-  collectItem: async (_parent, { itemId }, context) => {
+  collectItem: async (_parent, args, context) => {
+    const { itemId } = validateInput(collectionValidation.collectItemSchema, args);
     if (!context.userId) {
       throw new AuthenticationError('Authentication required');
     }
@@ -19,7 +22,8 @@ const mutation: MutationResolvers<MyContext> = {
     }
   },
 
-  uncollectItem: async (_parent, { itemId }, context) => {
+  uncollectItem: async (_parent, args, context) => {
+    const { itemId } = validateInput(collectionValidation.uncollectItemSchema, args);
     if (!context.userId) {
       throw new AuthenticationError('Authentication required');
     }

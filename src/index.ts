@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request } from 'express';
 import cors from 'cors';
 import http from 'http';
 
@@ -14,6 +14,7 @@ import logger from './lib/logger.js';
 import { context } from './lib/context.js';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { authDirective } from './directives/auth.directive.js';
+import { MessagingSystem } from './lib/messaging-system.js';
 import helmet from 'helmet';
 
 const app = express();
@@ -56,10 +57,27 @@ app.use(
 // Configure GraphQL API
 app.use('/graphql', expressMiddleware(apolloServer, { context }));
 
+// Initialize messaging system
+const messagingSystem = new MessagingSystem(httpServer, await context({ 
+  req: { headers: {} } as Request 
+}));
+messagingSystem.initialize();
+
+// Add health check endpoint
+app.get('/health', async (_req, res) => {
+  try {
+    const healthStatus = await messagingSystem.getHealthStatus();
+    res.json({ status: 'ok', messaging: healthStatus });
+  } catch (error) {
+    res.status(500).json({ status: 'error', error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 httpServer.listen(config.port, () => {
   logger.info(`
 ===========================================
 🚀 Server ready at http://localhost:${config.port} 🚀
+📱 WebSocket server ready for real-time messaging
 ===========================================`);
 });
 
@@ -69,6 +87,10 @@ const gracefulShutdown = (signal: string) => {
 
   httpServer.close(async () => {
     logger.info('🛑 HTTP server closed.');
+
+    // Shutdown messaging system
+    await messagingSystem.shutdown();
+    logger.info('Messaging system closed');
 
     // Close the db connection
     await prisma.$disconnect();

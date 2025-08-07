@@ -159,5 +159,8 @@ export const itemTypeDefs = gql`
 
   extend type Mutation {
     createItem(input: CreateItemInput!): GenericResponse!
+    createComment(itemId: ID!, content: String!, parentId: ID): GenericResponse!
+    likeComment(commentId: ID!): GenericResponse!
+    unlikeComment(commentId: ID!): GenericResponse!
   }
 `;

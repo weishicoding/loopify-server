@@ -8,12 +8,16 @@ import { uploadTypeDefs } from './upload/upload.schema.js';
 import { categoryTypeDefs } from './item/category.schema.js';
 import { itemTypeDefs } from './item/item.schema.js';
 import { collectionTypeDefs } from './item/collection.schema.js';
+import { messagingTypeDefs } from './messaging/messaging.schema.js';
 
 const baseTypeDefs = gql`
   type Query {
     _empty: String
   }
   type Mutation {
+    _empty: String
+  }
+  type Subscription {
     _empty: String
   }
 `;
@@ -29,4 +33,5 @@ export const typeDefs = [
   categoryTypeDefs,
   itemTypeDefs,
   collectionTypeDefs,
+  messagingTypeDefs,
 ];

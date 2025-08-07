@@ -22,6 +22,7 @@ import { generateCategoryModel } from '@/models/category.model.js';
 import { generateItemModels } from '@/models/item.model.js';
 import { generateCommentModel } from '@/models/comment.model.js';
 import { generateItemCollectionModel } from '@/models/itemCollection.model.js';
+import { generateMessagingModel } from '@/models/messaging.model.js';
 import { generateItemCollectionLoader } from '@/loaders/itemCollection.loader.js';
 
 /**
@@ -77,6 +78,7 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
     item: generateItemModels(modelContet),
     comment: generateCommentModel(modelContet),
     itemCollection: generateItemCollectionModel(modelContet),
+    messaging: generateMessagingModel(baseContext),
   };
 
   const context: MyContext = {

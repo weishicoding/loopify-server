@@ -1,21 +1,18 @@
-import { ApolloError, AuthenticationError, UserInputError } from 'apollo-server-errors';
+import { ApolloError, AuthenticationError } from 'apollo-server-errors';
 import { getS3PresignedUrl } from '@/lib/s3.js';
 import logger from '@/lib/logger.js';
 import { getErrorMessage } from '@/utils/error.util.js';
+import { validateInput } from '@/utils/validation.util.js';
+import uploadValidation from '@/validations/upload.validation.js';
 import { MyContext } from '@/types/index.js';
 import { MutationResolvers, FileUploadInfoInput } from '../../generated/types.js';
 
 const mutation: MutationResolvers<MyContext> = {
-  generateUploadUrl: async (_parent, { files }, context) => {
+  generateUploadUrl: async (_parent, args, context) => {
+    const { files } = validateInput(uploadValidation.generateUploadUrlSchema, args);
     const { userId } = context;
     if (!userId) {
       throw new AuthenticationError('User is not authenticated');
-    }
-    if (!files || files.length === 0) {
-      throw new UserInputError('You must provide at least one file to upload.');
-    }
-    if (files.length > 10) {
-      throw new UserInputError('You cannot request more than 10 upload URLs at a time.');
     }
     try {
       const uploadPromises = files.map(async (file: FileUploadInfoInput) => {
