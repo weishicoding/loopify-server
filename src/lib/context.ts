@@ -85,13 +85,13 @@ export const context = async ({ req }: { req: Request }): Promise<MyContext> => 
   };
 
   // Add helper method to create item collection loader
-  const collectionLoaderCache = new Map();
-  
+  const collectionLoaderCache = new Map<string, ReturnType<typeof generateItemCollectionLoader>>();
+
   context.getItemCollectionLoader = (userId: string) => {
     if (!collectionLoaderCache.has(userId)) {
       collectionLoaderCache.set(userId, generateItemCollectionLoader(context, userId));
     }
-    return collectionLoaderCache.get(userId);
+    return collectionLoaderCache.get(userId)!;
   };
 
   return context;

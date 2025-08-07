@@ -10,6 +10,7 @@ const config: CodegenConfig = {
         mappers: {
           User: '@prisma/client#User as PrismaUser',
           ItemDetail: '@/models/item.model.js#ItemPayload',
+          ItemList: '@/models/item.model.js#ItemListPayload',
         },
       },
     },

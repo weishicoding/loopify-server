@@ -6,7 +6,7 @@ import {
   MutationResolvers,
 } from '@/graphql/generated/types.js';
 import { MyContext } from '@/types/index.js';
-import { ItemPayload } from '@/models/item.model.js';
+import { ItemListPayload, ItemPayload } from '@/models/item.model.js';
 import logger from '@/lib/logger.js';
 
 const mutation: MutationResolvers<MyContext> = {
@@ -114,27 +114,25 @@ const query: QueryResolvers<MyContext> = {
 
   items: async (_parent, { first, after, filter }, context: MyContext) => {
     const connection = await context.models.item.findItemConnection({ first, after }, filter);
-    return {
-      ...connection,
-      edges: connection.edges.map((edge) => ({
-        cursor: edge.cursor,
-        node: {
-          id: edge.node.id,
-          title: edge.node.title,
-          description: edge.node.description || '',
-          collectionsCount: edge.node.collectionsCount,
-          price: edge.node.price.toNumber(),
-          oldPrice: null,
-          imageUrl: edge.node.images[0]?.url || '',
-          seller: edge.node.seller,
-          isCollectedByMe: false,
-        },
-      })),
-    };
+    // Type assertion needed because GraphQL expects ItemList fields to be resolved by field resolvers
+    return connection;
   },
 };
 
 const itemListResolver: ItemListResolvers<MyContext> = {
+  price: (parent: ItemListPayload) => {
+    return parent.price.toNumber();
+  },
+
+  oldPrice: (parent: ItemListPayload) => {
+    if (!parent.oldPrice) return null;
+    return parent.oldPrice.toNumber();
+  },
+
+  imageUrl: (parent: ItemListPayload) => {
+    return parent.images[0]?.url;
+  },
+
   isCollectedByMe: async (parent, _args, context: MyContext) => {
     if (!context.userId || !context.getItemCollectionLoader) {
       return false;

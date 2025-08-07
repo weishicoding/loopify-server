@@ -1,5 +1,5 @@
 import { ItemsFilterInput, CreateItemInput } from '@/graphql/generated/types.js';
-import { ConnectionArguments, CoreServiceContext } from '@/types/index.js';
+import { ConnectionArguments, CoreServiceContext, PaginationConnection } from '@/types/index.js';
 import { Prisma } from '@prisma/client';
 
 export type ItemPayload = Prisma.ItemGetPayload<{
@@ -8,6 +8,18 @@ export type ItemPayload = Prisma.ItemGetPayload<{
     category: true;
     images: {
       orderBy: { sort: 'asc' };
+    };
+  };
+}>;
+
+export type ItemListPayload = Prisma.ItemGetPayload<{
+  include: {
+    seller: true;
+    images: {
+      where: {
+        sort: 0;
+        take: 1;
+      };
     };
   };
 }>;
@@ -30,7 +42,7 @@ export const generateItemModels = (context: CoreServiceContext) => {
     findItemConnection: async (
       paginationArgs: ConnectionArguments,
       filter?: ItemsFilterInput | null
-    ) => {
+    ): Promise<PaginationConnection<ItemListPayload>> => {
       const { first, after } = paginationArgs;
 
       const where: Prisma.ItemWhereInput = {
@@ -98,7 +110,7 @@ export const generateItemModels = (context: CoreServiceContext) => {
     },
     createItem: async (sellerId: string, input: CreateItemInput): Promise<ItemPayload> => {
       const { title, description, price, condition, categoryId, imageUrls, location } = input;
-      
+
       return await prisma.$transaction(async (tx) => {
         const item = await tx.item.create({
           data: {
