@@ -5,7 +5,7 @@
     "moduleResolution": "nodenext",
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -17,5 +17,5 @@
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "codegen.ts", "**/*.spec.ts"]
+  "exclude": ["node_modules", "dist", "codegen.ts"]
 }

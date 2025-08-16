@@ -1,0 +1,129 @@
+# Docker Compose for testing and CI/CD
+version: '3.8'
+
+services:
+  # Test database
+  test-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Test Redis
+  test-redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application for testing
+  app-test:
+    build:
+      context: .
+      target: development
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test_user:test_password@test-db:5432/test_db
+      REDIS_URL: redis://test-redis:6379
+      JWT_SECRET: test-jwt-secret-for-testing
+      JWT_REFRESH_SECRET: test-refresh-secret-for-testing
+    ports:
+      - "4001:4000"
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Test runner service
+  test-runner:
+    build:
+      context: .
+      target: development
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test_user:test_password@test-db:5432/test_db
+      REDIS_URL: redis://test-redis:6379
+      JWT_SECRET: test-jwt-secret-for-testing
+      JWT_REFRESH_SECRET: test-refresh-secret-for-testing
+      API_URL: http://app-test:4000
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      app-test:
+        condition: service_started
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./test-results:/app/test-results
+    working_dir: /app
+    command: ./scripts/ci-cd-pipeline.sh test
+    profiles:
+      - testing
+
+  # Environment validator
+  env-validator:
+    build:
+      context: .
+      target: development
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test_user:test_password@test-db:5432/test_db
+      REDIS_URL: redis://test-redis:6379
+      JWT_SECRET: test-jwt-secret-for-testing
+      JWT_REFRESH_SECRET: test-refresh-secret-for-testing
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run test:validate-env
+    profiles:
+      - validation
+
+  # Load testing service
+  load-tester:
+    build:
+      context: .
+      target: development
+    environment:
+      API_URL: http://app-test:4000
+    depends_on:
+      app-test:
+        condition: service_started
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./test-results:/app/test-results
+    working_dir: /app
+    command: npm run test:load:quick
+    profiles:
+      - load-testing
+
+volumes:
+  test_db_data:
+    driver: local

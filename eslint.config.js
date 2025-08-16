@@ -11,6 +11,7 @@ export default tseslint.config(
       'src/graphql/generated/',
       '*.config.js',
       '*.config.ts',
+      'jest.config.cjs',
     ],
   },
   js.configs.recommended,

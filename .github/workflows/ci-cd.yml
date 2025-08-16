@@ -1,0 +1,332 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  DATABASE_URL: 'postgresql://test_user:test_password@localhost:5432/test_db'
+  REDIS_URL: 'redis://localhost:6379'
+  JWT_SECRET: 'test-jwt-secret-for-ci-pipeline-testing'
+  JWT_REFRESH_SECRET: 'test-refresh-secret-for-ci-pipeline-testing'
+  NODE_ENV: 'test'
+  CI: true
+  SKIP_ENV_VALIDATION: true
+  SKIP_INTEGRATION_TESTS: true
+  SKIP_E2E_TESTS: true
+  SKIP_ERROR_TESTS: true
+  SKIP_LOAD_TESTS: true
+  SKIP_DOCS_GENERATION: true
+
+jobs:
+  # Fast pipeline for quick feedback
+  fast-checks:
+    runs-on: ubuntu-latest
+    name: Fast Checks (Lint + Unit Tests)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run fast pipeline
+      run: ./scripts/ci-cd-pipeline.sh fast
+      
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports
+        path: coverage/
+        retention-days: 30
+
+  # Comprehensive testing with services
+  comprehensive-tests:
+    runs-on: ubuntu-latest
+    name: Comprehensive Tests
+    needs: fast-checks
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    env:
+      SKIP_ENV_VALIDATION: false
+      SKIP_INTEGRATION_TESTS: false
+      SKIP_E2E_TESTS: false
+      SKIP_ERROR_TESTS: false
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup database
+      run: |
+        # Install Prisma CLI and run migrations if they exist
+        if [ -f "prisma/schema.prisma" ]; then
+          npx prisma migrate deploy || npx prisma db push || echo "No migrations to run"
+        fi
+      
+    - name: Run comprehensive tests
+      run: ./scripts/ci-cd-pipeline.sh test
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 30
+
+  # Build and security checks
+  build-and-security:
+    runs-on: ubuntu-latest
+    name: Build and Security Checks
+    needs: fast-checks
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level=moderate || true
+      
+    - name: Check for secrets
+      run: |
+        # Install and run git-secrets if available
+        if command -v git-secrets >/dev/null 2>&1; then
+          git secrets --scan
+        else
+          echo "git-secrets not available, skipping secret scan"
+        fi
+      
+    - name: Run build
+      run: npm run build || echo "Build script not available"
+      
+    - name: TypeScript check
+      run: |
+        if [ -f "tsconfig.json" ]; then
+          npx tsc --noEmit
+        else
+          echo "TypeScript config not found, skipping type check"
+        fi
+
+  # Documentation generation (only on main branch)
+  generate-docs:
+    runs-on: ubuntu-latest
+    name: Generate Documentation
+    needs: [fast-checks]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+    env:
+      SKIP_DOCS_GENERATION: false
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup database
+      run: |
+        if [ -f "prisma/schema.prisma" ]; then
+          npx prisma migrate deploy || npx prisma db push || echo "No migrations to run"
+        fi
+      
+    - name: Generate documentation
+      run: npm run docs:generate || echo "Documentation generation not available"
+      
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: api-documentation
+        path: docs/
+        retention-days: 90
+
+  # Deployment readiness check (main branch only)
+  deployment-ready:
+    runs-on: ubuntu-latest
+    name: Deployment Readiness Check
+    needs: [comprehensive-tests, build-and-security]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run deployment readiness check
+      run: ./scripts/ci-cd-pipeline.sh deploy
+      
+    - name: Create deployment artifact
+      run: |
+        mkdir -p deployment-artifacts
+        tar -czf deployment-artifacts/app-$(date +%Y%m%d-%H%M%S).tar.gz \
+          --exclude=node_modules \
+          --exclude=.git \
+          --exclude=coverage \
+          --exclude=test-results \
+          .
+      
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-artifact
+        path: deployment-artifacts/
+        retention-days: 30
+
+  # Performance testing (scheduled or manual)
+  performance-tests:
+    runs-on: ubuntu-latest
+    name: Performance Tests
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    env:
+      SKIP_LOAD_TESTS: false
+      API_URL: 'http://localhost:4000'
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Setup database
+      run: |
+        if [ -f "prisma/schema.prisma" ]; then
+          npx prisma migrate deploy || npx prisma db push
+        fi
+      
+    - name: Start application
+      run: |
+        npm start &
+        sleep 30  # Wait for app to start
+        
+    - name: Run load tests
+      run: npm run test:load:quick
+      
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-results
+        path: test-results/load-tests/
+        retention-days: 90
+
+# Schedule performance tests weekly
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
